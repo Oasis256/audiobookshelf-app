@@ -14,7 +14,7 @@ export default {
   },
 
   head: {
-    title: 'The Book Shelf',
+    title: 'The BookShelf',
     htmlAttrs: {
       lang: 'en'
     },

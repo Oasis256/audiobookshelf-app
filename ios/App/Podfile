@@ -20,7 +20,7 @@ def capacitor_pods
   pod 'CordovaPlugins', :path => '../capacitor-cordova-ios-plugins'
 end
 
-target 'Audiobookshelf' do
+target 'BookShelf' do
   capacitor_pods
   # Add your Pods here
   

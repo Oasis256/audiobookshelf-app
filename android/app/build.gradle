@@ -23,13 +23,8 @@ kotlin {
 android {
 
 
-<<<<<<< HEAD
-    namespace 'com.bookshelf.app'
-    buildFeatures {
-=======
-  namespace 'com.audiobookshelf.app'
+  namespace 'com.bookshelf.app'
   buildFeatures {
->>>>>>> f215efdcd0b16e111a55c0537d0e9af4025653c7
     viewBinding true
   }
   kotlinOptions {

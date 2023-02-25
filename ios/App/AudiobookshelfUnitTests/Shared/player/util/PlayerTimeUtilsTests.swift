@@ -1,12 +1,12 @@
 //
 //  PlayerTimeUtilsTests.swift
-//  AudiobookshelfUnitTests
+//  BookShelfUnitTests
 //
 //  Created by Ron Heft on 9/20/22.
 //
 
 import XCTest
-@testable import Audiobookshelf
+@testable import BookShelf
 
 final class PlayerTimeUtilsTests: XCTestCase {
     

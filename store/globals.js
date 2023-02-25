@@ -33,7 +33,7 @@ export const state = () => ({
       value: 30
     }
   ],
-  libraryIcons: ['database', 'audiobookshelf', 'books-1', 'books-2', 'book-1', 'microphone-1', 'microphone-3', 'radio', 'podcast', 'rss', 'headphones', 'music', 'file-picture', 'rocket', 'power', 'star', 'heart'],
+  libraryIcons: ['database', 'audiobookshelf', 'bookshelf', 'books-1', 'books-2', 'book-1', 'microphone-1', 'microphone-3', 'radio', 'podcast', 'rss', 'headphones', 'music', 'file-picture', 'rocket', 'power', 'star', 'heart'],
   selectedPlaylistItems: [],
   showPlaylistsAddCreateModal: false,
   hapticFeedback: 'LIGHT'

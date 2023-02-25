@@ -1,17 +1,9 @@
-<<<<<<< HEAD:android/app/src/main/java/com/bookshelf/app/data/DbManager.kt
-package com.bookshelf.app.data
-
-import android.content.Context
-import android.util.Log
-import com.bookshelf.app.plugins.AbsDownloader
-=======
 package com.bookshelf.app.managers
 
 import android.content.Context
 import android.util.Log
 import com.bookshelf.app.data.*
 import com.bookshelf.app.models.DownloadItem
->>>>>>> f215efdcd0b16e111a55c0537d0e9af4025653c7:android/app/src/main/java/com/bookshelf/app/managers/DbManager.kt
 import io.paperdb.Paper
 import java.io.File
 

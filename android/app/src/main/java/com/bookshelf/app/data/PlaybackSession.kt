@@ -6,12 +6,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.support.v4.media.MediaMetadataCompat
-<<<<<<< HEAD:android/app/src/main/java/com/bookshelf/app/data/PlaybackSession.kt
-import androidx.core.app.NotificationCompat
-import com.bookshelf.app.R
-import com.bookshelf.app.device.DeviceManager
-import com.bookshelf.app.player.MediaProgressSyncData
-=======
 import com.bookshelf.app.device.DeviceManager
 import com.bookshelf.app.media.MediaProgressSyncData
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -142,15 +136,9 @@ class PlaybackSession(
 
   @JsonIgnore
   fun getCoverUri(): Uri {
-<<<<<<< HEAD:android/app/src/main/java/com/bookshelf/app/data/PlaybackSession.kt
-    if (localLibraryItem?.coverContentUrl != null) return Uri.parse(localLibraryItem?.coverContentUrl) ?: Uri.parse("android.resource://com.bookshelf.app/" + R.drawable.icon)
+    if (localLibraryItem?.coverContentUrl != null) return Uri.parse(localLibraryItem?.coverContentUrl) ?: Uri.parse("android.resource://com.bookshelf.app/" + com.bookshelf.app.R.drawable.icon)
 
-    if (coverPath == null) return Uri.parse("android.resource://com.bookshelf.app/" + R.drawable.icon)
-=======
-    if (localLibraryItem?.coverContentUrl != null) return Uri.parse(localLibraryItem?.coverContentUrl) ?: Uri.parse("android.resource://com.audiobookshelf.app/" + com.bookshelf.app.R.drawable.icon)
-
-    if (coverPath == null) return Uri.parse("android.resource://com.audiobookshelf.app/" + com.bookshelf.app.R.drawable.icon)
->>>>>>> 4fd4cc5604f498b126c0a3125577451835d8979f:android/app/src/main/java/com/audiobookshelf/app/data/PlaybackSession.kt
+    if (coverPath == null) return Uri.parse("android.resource://com.bookshelf.app/" + com.bookshelf.app.R.drawable.icon)
     return Uri.parse("$serverAddress/api/items/$libraryItemId/cover?token=${DeviceManager.token}")
   }
 

@@ -1,26 +1,14 @@
-<<<<<<< HEAD:android/app/src/main/java/com/bookshelf/app/player/MediaProgressSyncer.kt
-package com.bookshelf.app.player
-=======
 package com.bookshelf.app.media
->>>>>>> f215efdcd0b16e111a55c0537d0e9af4025653c7:android/app/src/main/java/com/bookshelf/app/media/MediaProgressSyncer.kt
 
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-<<<<<<< HEAD:android/app/src/main/java/com/bookshelf/app/player/MediaProgressSyncer.kt
-import com.bookshelf.app.data.LocalMediaProgress
-import com.bookshelf.app.data.MediaProgress
-import com.bookshelf.app.data.PlaybackSession
-import com.bookshelf.app.device.DeviceManager
-import com.bookshelf.app.server.ApiHandler
-=======
 import com.bookshelf.app.data.LocalMediaProgress
 import com.bookshelf.app.data.MediaProgress
 import com.bookshelf.app.data.PlaybackSession
 import com.bookshelf.app.device.DeviceManager
 import com.bookshelf.app.player.PlayerNotificationService
 import com.bookshelf.app.server.ApiHandler
->>>>>>> f215efdcd0b16e111a55c0537d0e9af4025653c7:android/app/src/main/java/com/bookshelf/app/media/MediaProgressSyncer.kt
 import java.util.*
 import kotlin.concurrent.schedule
 
