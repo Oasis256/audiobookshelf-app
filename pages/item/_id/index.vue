@@ -68,8 +68,8 @@
         <div v-if="podcastAuthor" class="text-sm">{{ podcastAuthor }}</div>
         <div v-else-if="bookAuthors && bookAuthors.length" class="text-sm">
           <template v-for="(author, index) in bookAuthors">
-            <nuxt-link :key="author.id" :to="`/bookshelf/library?filter=authors.${$encode(author.id)}`" class="underline">{{ author.name }}</nuxt-link>
-            <span :key="`${author.id}-comma`" v-if="index < bookAuthors.length - 1">,&nbsp;</span>
+            <nuxt-link :key="author.id" :to="`/bookshelf/library?filter=authors.${$encode(author.id)}`" class="underline">{{ author.name }}</nuxt-link
+            ><span :key="`${author.id}-comma`" v-if="index < bookAuthors.length - 1">,&nbsp;</span>
           </template>
         </div>
 
@@ -602,7 +602,7 @@ export default {
         } else if (this.isLocal) {
           localEpisode = episode
         }
-        const serverEpisodeId = !this.isLocal ? episodeId : localEpisode ? localEpisode.serverEpisodeId : null
+        const serverEpisodeId = !this.isLocal ? episodeId : localEpisode?.serverEpisodeId || null
 
         if (serverEpisodeId && this.serverLibraryItemId && this.isCasting) {
           // If casting and connected to server for local library item then send server library item id
@@ -837,9 +837,19 @@ export default {
         console.log('RSS Feed Closed', data)
         this.rssFeed = null
       }
+    },
+    async setLibrary() {
+      if (!this.libraryItem.libraryId) return
+      await this.$store.dispatch('libraries/fetch', this.libraryItem.libraryId)
+      this.$localStore.setLastLibraryId(this.libraryItem.libraryId)
     }
   },
   mounted() {
+    // If library of this item is different from current library then switch libraries
+    if (this.$store.state.libraries.currentLibraryId !== this.libraryItem.libraryId) {
+      this.setLibrary()
+    }
+
     this.windowWidth = window.innerWidth
     window.addEventListener('resize', this.windowResized)
     this.$eventBus.$on('library-changed', this.libraryChanged)

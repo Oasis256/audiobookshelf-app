@@ -1,5 +1,9 @@
 <template>
   <div class="w-full h-full min-h-full relative">
+    <div v-if="attemptingConnection" class="w-full pt-4 flex items-center justify-center">
+      <widgets-loading-spinner />
+      <p class="pl-4">Attempting server connection...</p>
+    </div>
     <div v-if="shelves.length && isLoading" class="w-full pt-4 flex items-center justify-center">
       <widgets-loading-spinner />
       <p class="pl-4">Loading server data...</p>
@@ -232,7 +236,7 @@ export default {
       console.log('[categories] Local shelves set', this.shelves.length, this.lastLocalFetch)
 
       if (isConnectedToServerWithInternet) {
-        const categories = await this.$axios.$get(`/api/libraries/${this.currentLibraryId}/personalized?minified=1&include=rssfeed`).catch((error) => {
+        const categories = await this.$axios.$get(`/api/libraries/${this.currentLibraryId}/personalized?minified=1&include=rssfeed,numEpisodesIncomplete`).catch((error) => {
           console.error('[categories] Failed to fetch categories', error)
           return []
         })
