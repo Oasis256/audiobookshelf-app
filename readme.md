@@ -1,9 +1,9 @@
-# Audiobookshelf Mobile App
+# The BookShelf Mobile App
 
-Audiobookshelf is a self-hosted audiobook and podcast server.
+The BookShelf is a self-hosted audiobook and podcast server.
 
 ### Android (beta)
-Get the Android app on the [Google Play Store](https://play.google.com/store/apps/details?id=com.audiobookshelf.app)
+Get the Android app on the [Google Play Store](https://play.google.com/store/apps/details?id=com.book.shelf)
 
 ### iOS (early beta)
 
@@ -13,13 +13,13 @@ Join the beta testers and install the iOS app: https://testflight.apple.com/join
 
 ---
 
-[Go to the main project repo github.com/advplyr/audiobookshelf](https://github.com/advplyr/audiobookshelf) or the project site [audiobookshelf.org](https://audiobookshelf.org)
+[Go to the main project repo github.com/advplyr/The BookShelf](https://github.com/advplyr/The BookShelf) or the project site [The BookShelf.org](https://The BookShelf.org)
 
-Join us on [discord](https://discord.gg/pJsjuNCKRq) or [Matrix](https://matrix.to/#/#audiobookshelf:matrix.org)
+Join us on [discord](https://discord.gg/pJsjuNCKRq) or [Matrix](https://matrix.to/#/#The BookShelf:matrix.org)
 
-**Requires an Audiobookshelf server to connect with**
+**Requires an The BookShelf server to connect with**
 
-<img alt="Screenshot" src="https://github.com/advplyr/audiobookshelf-app/raw/master/screenshots/DeviceDemoScreens.png" />
+<img alt="Screenshot" src="https://github.com/advplyr/The BookShelf-app/raw/master/screenshots/DeviceDemoScreens.png" />
 
 
 ## Contributing

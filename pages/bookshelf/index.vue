@@ -23,7 +23,7 @@
         <div class="w-full" v-if="!user">
           <div class="flex justify-center items-center mb-3">
             <span class="material-icons text-error text-lg">cloud_off</span>
-            <p class="pl-2 text-error text-sm">Audiobookshelf server not connected.</p>
+            <p class="pl-2 text-error text-sm">The BookShelf server not connected.</p>
           </div>
         </div>
         <div class="flex justify-center">

@@ -1,5 +1,5 @@
 {
-  "name": "audiobookshelf-app",
+  "name": "BookShelf",
   "integrations": {
     "capacitor": {}
   },

@@ -21,7 +21,7 @@ kotlin {
 }
 
 android {
-  namespace 'com.audiobookshelf.app'
+  namespace 'com.book.shelf'
   buildFeatures {
     viewBinding true
   }
@@ -30,7 +30,7 @@ android {
     }
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.audiobookshelf.app"
+        applicationId "com.book.shelf"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 96
@@ -52,6 +52,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+          signingConfig signingConfigs.debug
         }
     }
 }
