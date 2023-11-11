@@ -26,9 +26,12 @@ export default {
   },
   methods: {
     async init() {
+      if (!this.currentLibraryId) {
+        return
+      }
       this.loadedLibraryId = this.currentLibraryId
-      this.authors = await this.$axios
-        .$get(`/api/libraries/${this.currentLibraryId}/authors`)
+      this.authors = await this.$nativeHttp
+        .get(`/api/libraries/${this.currentLibraryId}/authors`)
         .then((response) => response.authors)
         .catch((error) => {
           console.error('Failed to load authors', error)

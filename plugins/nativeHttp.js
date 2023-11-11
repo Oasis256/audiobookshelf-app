@@ -17,6 +17,9 @@ export default function ({ store }, inject) {
           url = `${serverUrl}${url}`
         }
       }
+      if (data) {
+        headers['Content-Type'] = 'application/json'
+      }
       console.log(`[nativeHttp] Making ${method} request to ${url}`)
       return CapacitorHttp.request({
         method,
@@ -34,6 +37,9 @@ export default function ({ store }, inject) {
     },
     patch(url, data, options = {}) {
       return this.request('PATCH', url, data, options)
+    },
+    delete(url, options = {}) {
+      return this.request('DELETE', url, undefined, options)
     }
   }
   inject('nativeHttp', nativeHttp)

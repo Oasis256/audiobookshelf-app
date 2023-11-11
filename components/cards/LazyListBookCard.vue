@@ -18,7 +18,7 @@
         <p class="whitespace-normal" :style="{ fontSize: 0.8 * sizeMultiplier + 'rem' }">
           <span v-if="seriesSequence">#{{ seriesSequence }}&nbsp;</span>{{ displayTitle }}
         </p>
-        <p class="truncate text-gray-400" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">by {{ displayAuthor }}</p>
+        <p class="truncate text-gray-400" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">{{ displayAuthor }}</p>
         <p v-if="displaySortLine" class="truncate text-gray-400" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">{{ displaySortLine }}</p>
         <p v-if="duration" class="truncate text-gray-400" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">{{ $elapsedPretty(duration) }}</p>
         <p v-if="episodes" class="truncate text-gray-400" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">{{ episodes }}</p>
@@ -62,7 +62,6 @@ export default {
       isProcessingReadUpdate: false,
       libraryItem: null,
       imageReady: false,
-      rescanning: false,
       selected: false,
       isSelectionMode: false,
       showCoverBg: false,
@@ -82,9 +81,6 @@ export default {
     }
   },
   computed: {
-    showExperimentalFeatures() {
-      return this.store.state.showExperimentalFeatures
-    },
     _libraryItem() {
       return this.libraryItem || {}
     },
@@ -188,20 +184,21 @@ export default {
     },
     booksInSeries() {
       // Only added to item object when collapseSeries is enabled
-      return this.collapsedSeries ? this.collapsedSeries.numBooks : 0
+      return this.collapsedSeries?.numBooks || 0
     },
     displayTitle() {
-      if (this.orderBy === 'media.metadata.title' && this.sortingIgnorePrefix && this.title.toLowerCase().startsWith('the ')) {
-        return this.title.substr(4) + ', The'
-      }
-      return this.title
+      const ignorePrefix = this.orderBy === 'media.metadata.title' && this.sortingIgnorePrefix
+      if (this.collapsedSeries) return ignorePrefix ? this.collapsedSeries.nameIgnorePrefix : this.collapsedSeries.name
+      return ignorePrefix ? this.mediaMetadata.titleIgnorePrefix : this.title
     },
     displayAuthor() {
       if (this.isPodcast) return this.author
+      if (this.collapsedSeries) return `${this.booksInSeries} books in series`
       if (this.orderBy === 'media.metadata.authorNameLF') return this.authorLF
       return this.author
     },
     displaySortLine() {
+      if (this.collapsedSeries) return null
       if (this.orderBy === 'mtimeMs') return 'Modified ' + this.$formatDate(this._libraryItem.mtimeMs)
       if (this.orderBy === 'birthtimeMs') return 'Born ' + this.$formatDate(this._libraryItem.birthtimeMs)
       if (this.orderBy === 'addedAt') return 'Added ' + this.$formatDate(this._libraryItem.addedAt)
@@ -218,19 +215,19 @@ export default {
       return this.userProgress ? !!this.userProgress.isFinished : false
     },
     showError() {
-      return this.hasMissingParts || this.hasInvalidParts || this.isMissing || this.isInvalid
+      return this.numMissingParts || this.isMissing || this.isInvalid
     },
     isStreaming() {
       return this.store.getters['getlibraryItemIdStreaming'] === this.libraryItemId
     },
     showReadButton() {
-      return !this.isSelectionMode && this.showExperimentalFeatures && !this.showPlayButton && this.hasEbook
+      return !this.isSelectionMode && !this.showPlayButton && this.hasEbook
     },
     showPlayButton() {
       return !this.isSelectionMode && !this.isMissing && !this.isInvalid && this.numTracks && !this.isStreaming
     },
     showSmallEBookIcon() {
-      return !this.isSelectionMode && this.showExperimentalFeatures && this.hasEbook
+      return !this.isSelectionMode && this.hasEbook
     },
     isMissing() {
       return this._libraryItem.isMissing
@@ -238,84 +235,12 @@ export default {
     isInvalid() {
       return this._libraryItem.isInvalid
     },
-    hasMissingParts() {
-      return this._libraryItem.hasMissingParts
-    },
-    hasInvalidParts() {
-      return this._libraryItem.hasInvalidParts
-    },
-    errorText() {
-      if (this.isMissing) return 'Item directory is missing!'
-      else if (this.isInvalid) return 'Item has no media files'
-      var txt = ''
-      if (this.hasMissingParts) {
-        txt = `${this.hasMissingParts} missing parts.`
-      }
-      if (this.hasInvalidParts) {
-        if (this.hasMissingParts) txt += ' '
-        txt += `${this.hasInvalidParts} invalid parts.`
-      }
-      return txt || 'Unknown Error'
-    },
-    overlayWrapperClasslist() {
-      var classes = []
-      if (this.isSelectionMode) classes.push('bg-opacity-60')
-      else classes.push('bg-opacity-40')
-      if (this.selected) {
-        classes.push('border-2 border-yellow-400')
-      }
-      return classes
+    numMissingParts() {
+      if (this.isPodcast) return 0
+      return this.media.numMissingParts
     },
     store() {
       return this.$store || this.$nuxt.$store
-    },
-    userCanUpdate() {
-      return this.store.getters['user/getUserCanUpdate']
-    },
-    userCanDelete() {
-      return this.store.getters['user/getUserCanDelete']
-    },
-    userCanDownload() {
-      return this.store.getters['user/getUserCanDownload']
-    },
-    userIsRoot() {
-      return this.store.getters['user/getIsRoot']
-    },
-    titleFontSize() {
-      return 0.75 * this.sizeMultiplier
-    },
-    authorFontSize() {
-      return 0.6 * this.sizeMultiplier
-    },
-    placeholderCoverPadding() {
-      return 0.8 * this.sizeMultiplier
-    },
-    authorBottom() {
-      return 0.75 * this.sizeMultiplier
-    },
-    titleCleaned() {
-      if (!this.title) return ''
-      if (this.title.length > 60) {
-        return this.title.slice(0, 57) + '...'
-      }
-      return this.title
-    },
-    authorCleaned() {
-      if (!this.author) return ''
-      if (this.author.length > 30) {
-        return this.author.slice(0, 27) + '...'
-      }
-      return this.author
-    },
-    isAlternativeBookshelfView() {
-      return false
-      // var constants = this.$constants || this.$nuxt.$constants
-      // return this.bookshelfView === constants.BookshelfView.TITLES
-    },
-    titleDisplayBottomOffset() {
-      if (!this.isAlternativeBookshelfView) return 0
-      else if (!this.displaySortLine) return 3 * this.sizeMultiplier
-      return 4.25 * this.sizeMultiplier
     },
     coverWidth() {
       return 80 / this.bookCoverAspectRatio
@@ -341,36 +266,13 @@ export default {
       } else {
         var router = this.$router || this.$nuxt.$router
         if (router) {
-          if (this.collapsedSeries) router.push(`/library/${this.libraryId}/series/${this.collapsedSeries.id}`)
+          if (this.collapsedSeries) router.push(`/bookshelf/series/${this.collapsedSeries.id}`)
           else router.push(`/item/${this.libraryItemId}`)
         }
       }
     },
     editClick() {
       this.$emit('edit', this.libraryItem)
-    },
-    rescan() {
-      this.rescanning = true
-      this.$axios
-        .$get(`/api/items/${this.libraryItemId}/scan`)
-        .then((data) => {
-          this.rescanning = false
-          var result = data.result
-          if (!result) {
-            this.$toast.error(`Re-Scan Failed for "${this.title}"`)
-          } else if (result === 'UPDATED') {
-            this.$toast.success(`Re-Scan complete item was updated`)
-          } else if (result === 'UPTODATE') {
-            this.$toast.success(`Re-Scan complete item was up to date`)
-          } else if (result === 'REMOVED') {
-            this.$toast.error(`Re-Scan complete item was removed`)
-          }
-        })
-        .catch((error) => {
-          console.error('Failed to scan library item', error)
-          this.$toast.error('Failed to scan library item')
-          this.rescanning = false
-        })
     },
     showEditModalTracks() {
       // More menu func

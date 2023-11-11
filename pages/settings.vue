@@ -8,7 +8,8 @@
       </div>
       <p class="pl-4">Use bookshelf view</p>
     </div>
-    <div class="flex items-center py-3" @click.stop="toggleLockOrientation">
+    <!-- screen.orientation.lock not supported on iOS webview -->
+    <div v-if="!isiOS" class="flex items-center py-3" @click.stop="toggleLockOrientation">
       <div class="w-10 flex justify-center pointer-events-none">
         <ui-toggle-switch v-model="lockCurrentOrientation" />
       </div>
@@ -135,7 +136,7 @@ export default {
       moreMenuSetting: '',
       settings: {
         disableAutoRewind: false,
-        enableAltView: false,
+        enableAltView: true,
         jumpForwardTime: 10,
         jumpBackwardsTime: 10,
         enableMp3IndexSeeking: false,
@@ -414,7 +415,7 @@ export default {
       this.settings.enableAltView = !!deviceSettings.enableAltView
       this.settings.jumpForwardTime = deviceSettings.jumpForwardTime || 10
       this.settings.jumpBackwardsTime = deviceSettings.jumpBackwardsTime || 10
-      this.settings.toggleEnableMp3IndexSeeking = !!deviceSettings.toggleEnableMp3IndexSeeking
+      this.settings.enableMp3IndexSeeking = !!deviceSettings.enableMp3IndexSeeking
 
       this.settings.lockOrientation = deviceSettings.lockOrientation || 'NONE'
       this.lockCurrentOrientation = this.settings.lockOrientation !== 'NONE'

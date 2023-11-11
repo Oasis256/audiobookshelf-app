@@ -19,7 +19,7 @@ Join us on [discord](https://discord.gg/pJsjuNCKRq) or [Matrix](https://matrix.t
 
 **Requires an The BookShelf server to connect with**
 
-<img alt="Screenshot" src="https://github.com/advplyr/The BookShelf-app/raw/master/screenshots/DeviceDemoScreens.png" />
+<img alt="Screenshot" src="https://github.com/advplyr/The BookShelf/raw/master/screenshots/DeviceDemoScreens.png" />
 
 
 ## Contributing

@@ -7,7 +7,8 @@ export const state = () => ({
   showModal: false,
   issues: 0,
   filterData: null,
-  numUserPlaylists: 0
+  numUserPlaylists: 0,
+  ereaderDevices: []
 })
 
 export const getters = {
@@ -39,8 +40,8 @@ export const actions = {
       return false
     }
 
-    return this.$axios
-      .$get(`/api/libraries/${libraryId}?include=filterdata`)
+    return this.$nativeHttp
+      .get(`/api/libraries/${libraryId}?include=filterdata`)
       .then((data) => {
         const library = data.library
         const filterData = data.filterdata
@@ -75,8 +76,8 @@ export const actions = {
       return false
     }
 
-    return this.$axios
-      .$get(`/api/libraries`)
+    return this.$nativeHttp
+      .get(`/api/libraries`)
       .then((data) => {
         // TODO: Server release 2.2.9 changed response to an object. Remove after a few releases
         const libraries = data.libraries || data
@@ -177,5 +178,8 @@ export const mutations = {
         if (genre && !state.filterData.genres.includes(genre)) state.filterData.genres.push(genre)
       })
     }
+  },
+  setEReaderDevices(state, ereaderDevices) {
+    state.ereaderDevices = ereaderDevices
   }
 }

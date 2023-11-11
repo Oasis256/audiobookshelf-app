@@ -1,9 +1,16 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+<<<<<<< HEAD
     <string name="app_name">The BookShelf</string>
     <string name="title_activity_main">The BookShelf</string>
     <string name="package_name">com.book.shelf</string>
     <string name="custom_url_scheme">com.book.shelf</string>
+=======
+    <string name="app_name">audiobookshelf</string>
+    <string name="title_activity_main">audiobookshelf</string>
+    <string name="package_name">com.audiobookshelf.app</string>
+    <string name="custom_url_scheme">audiobookshelf</string>
+>>>>>>> 93cb319e978e9c9df94a0bac2be32949148ee65a
     <string name="add_widget">Add widget</string>
     <string name="app_widget_description">Simple widget for The BookShelf playback</string>
     <string name="action_jump_forward">Jump Forward</string>

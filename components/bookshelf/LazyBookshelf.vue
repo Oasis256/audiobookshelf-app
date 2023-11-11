@@ -72,6 +72,9 @@ export default {
     showBookshelfListView() {
       return this.isBookEntity && this.bookshelfListView
     },
+    sortingIgnorePrefix() {
+      return this.$store.getters['getServerSetting']('sortingIgnorePrefix')
+    },
     entityName() {
       return this.page
     },
@@ -332,6 +335,12 @@ export default {
     },
     async init() {
       if (this.isFirstInit) return
+      if (!this.user) {
+        // Offline support not available
+        await this.resetEntities()
+        this.$eventBus.$emit('bookshelf-total-entities', 0)
+        return
+      }
 
       this.localLibraryItems = await this.$db.getLocalLibraryItems(this.currentLibraryMediaType)
       console.log('Local library items loaded for lazy bookshelf', this.localLibraryItems.length)
@@ -358,8 +367,14 @@ export default {
       this.handleScroll(scrollTop)
     },
     buildSearchParams() {
-      if (this.page === 'search' || this.page === 'series' || this.page === 'collections') {
+      if (this.page === 'search' || this.page === 'collections') {
         return ''
+      } else if (this.page === 'series') {
+        // Sort by name ascending
+        let searchParams = new URLSearchParams()
+        searchParams.set('sort', 'name')
+        searchParams.set('desc', 0)
+        return searchParams.toString()
       }
 
       let searchParams = new URLSearchParams()
