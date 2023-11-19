@@ -33,8 +33,8 @@ android {
         applicationId "com.book.shelf"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 97
-        versionName "0.9.66-beta"
+        versionCode 98
+        versionName "0.9.67-beta"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [
           "appAuthRedirectScheme": "com.book.shelf"
@@ -126,9 +126,6 @@ dependencies {
 
   // Jackson for JSON
   implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.12.2'
-
-  // FFMPEG-Kit
-  implementation 'com.arthenica:ffmpeg-kit-min:4.5.1'
 }
 
 apply from: 'capacitor.build.gradle'
