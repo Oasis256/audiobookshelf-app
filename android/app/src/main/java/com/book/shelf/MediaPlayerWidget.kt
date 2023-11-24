@@ -50,7 +50,15 @@ class MediaPlayerWidget : AppWidgetProvider() {
   }
 }
 
-internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int, playbackSession: PlaybackSession?, isPlaying:Boolean, isAppClosed:Boolean) {
+internal fun updateAppWidget(
+      context: Context, 
+      appWidgetManager: AppWidgetManager, 
+      appWidgetId: Int, 
+      playbackSession: PlaybackSession?, 
+      isPlaying:Boolean, 
+      isAppClosed:Boolean,
+      mediaDescription: AbMediaDescriptionAdapter
+) {
   val tag = "MediaPlayerWidget"
   val views = RemoteViews(context.packageName, R.layout.media_player_widget)
   Log.i(tag, "updateAppWidget ${playbackSession?.displayTitle ?: "No Title"} isPlaying=$isPlaying isAppClosed=$isAppClosed")
@@ -89,6 +97,20 @@ internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManage
 
   val title = playbackSession?.displayTitle ?: "Unknown"
   views.setTextViewText(R.id.widgetMediaTitle, title)
+
+
+
+
+// Update views with media description information
+val title = mediaDescription.getCurrentContentTitle(/* pass player instance here */)
+val subtitle = mediaDescription.getCurrentContentText(/* pass player instance here */)
+
+views.setTextViewText(R.id.widgetMediaTitle, title)
+views.setTextViewText(R.id.widgetMediaSubtitle, subtitle)
+
+
+
+
 
   val options = RequestOptions().override(300, 300).placeholder(R.drawable.icon).error(R.drawable.icon)
   Glide.with(context.applicationContext).asBitmap().load(imageUri).apply(options).into(awt)
