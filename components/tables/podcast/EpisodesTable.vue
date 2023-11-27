@@ -116,6 +116,10 @@ export default {
         {
           text: 'Complete',
           value: 'complete'
+        },
+        {
+          text: 'Downloaded',
+          value: 'downloaded'
         }
       ],
       fetchingRSSFeed: false,
@@ -141,10 +145,10 @@ export default {
       return this.$store.state.networkConnected
     },
     libraryItemId() {
-      return this.libraryItem ? this.libraryItem.id : null
+      return this.libraryItem?.id || null
     },
     media() {
-      return this.libraryItem ? this.libraryItem.media || {} : {}
+      return this.libraryItem?.media || {}
     },
     mediaMetadata() {
       return this.media.metadata || {}
@@ -154,11 +158,14 @@ export default {
     },
     episodesFiltered() {
       return this.episodesCopy.filter((ep) => {
+        if (this.filterKey === 'downloaded') {
+          return !!this.localEpisodeMap[ep.id]
+        }
         var mediaProgress = this.getEpisodeProgress(ep)
         if (this.filterKey === 'incomplete') {
-          return !mediaProgress || !mediaProgress.isFinished
+          return !mediaProgress?.isFinished
         } else if (this.filterKey === 'complete') {
-          return mediaProgress && mediaProgress.isFinished
+          return mediaProgress?.isFinished
         } else if (this.filterKey === 'inProgress') {
           return mediaProgress && !mediaProgress.isFinished
         } else if (this.filterKey === 'all') {
@@ -290,6 +297,9 @@ export default {
     }
   },
   mounted() {
+    if (this.$route.query['episodefilter'] === 'downloaded') {
+      this.filterKey = 'downloaded'
+    }
     this.$socket.$on('episode_download_queued', this.episodeDownloadQueued)
     this.$socket.$on('episode_download_started', this.episodeDownloadStarted)
     this.$socket.$on('episode_download_finished', this.episodeDownloadFinished)
