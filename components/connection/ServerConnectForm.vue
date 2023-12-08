@@ -12,7 +12,7 @@
           </div>
         </div>
         <div class="my-1 py-4 w-full">
-          <ui-btn class="w-full" @click="newServerConfigClick">Add New Server</ui-btn>
+          <ui-btn class="w-full" @click="newServerConfigClick">{{ $strings.ButtonAddNewServer }}</ui-btn>
         </div>
       </template>
       <!-- form to add a new server connection config -->
@@ -22,10 +22,10 @@
           <div v-if="serverConnectionConfigs.length" class="flex items-center mb-4" @click="showServerList">
             <span class="material-icons text-gray-300">arrow_back</span>
           </div>
-          <h2 class="text-lg leading-7 mb-2">Server address</h2>
+          <h2 class="text-lg leading-7 mb-2">{{ $strings.LabelServerAddress }}</h2>
           <ui-text-input v-model="serverConfig.address" :disabled="processing || !networkConnected || !!serverConfig.id" placeholder="http://55.55.55.55:13378" type="url" class="w-full h-10" />
           <div class="flex justify-end items-center mt-6">
-            <ui-btn :disabled="processing || !networkConnected" type="submit" :padding-x="3" class="h-10">{{ networkConnected ? 'Submit' : 'No Internet' }}</ui-btn>
+            <ui-btn :disabled="processing || !networkConnected" type="submit" :padding-x="3" class="h-10">{{ networkConnected ? $strings.ButtonSubmit : $strings.MessageNoNetworkConnection }}</ui-btn>
           </div>
         </form>
         <!-- username/password and auth methods -->
@@ -41,13 +41,13 @@
           </div>
           <div class="w-full h-px bg-white bg-opacity-10 my-2" />
           <form v-if="isLocalAuthEnabled" @submit.prevent="submitAuth" class="pt-3">
-            <ui-text-input v-model="serverConfig.username" :disabled="processing" placeholder="username" class="w-full mb-2 text-lg" />
-            <ui-text-input v-model="password" type="password" :disabled="processing" placeholder="password" class="w-full mb-2 text-lg" />
+            <ui-text-input v-model="serverConfig.username" :disabled="processing" :placeholder="$strings.LabelUsername" class="w-full mb-2 text-lg" />
+            <ui-text-input v-model="password" type="password" :disabled="processing" :placeholder="$strings.LabelPassword" class="w-full mb-2 text-lg" />
 
             <div class="flex items-center pt-2">
               <ui-icon-btn v-if="serverConfig.id" small bg-color="error" icon="delete" @click="removeServerConfigClick" />
               <div class="flex-grow" />
-              <ui-btn :disabled="processing || !networkConnected" type="submit" class="mt-1 h-10">{{ networkConnected ? 'Submit' : 'No Internet' }}</ui-btn>
+              <ui-btn :disabled="processing || !networkConnected" type="submit" class="mt-1 h-10">{{ networkConnected ? $strings.ButtonSubmit : $strings.MessageNoNetworkConnection }}</ui-btn>
             </div>
           </form>
           <div v-if="isLocalAuthEnabled && isOpenIDAuthEnabled" class="w-full h-px bg-white bg-opacity-10 my-4" />
@@ -73,7 +73,7 @@
       </div>
     </div>
 
-    <p v-if="!serverConnectionConfigs.length" class="mt-2 text-center text-error"><strong>Important!</strong> This app is designed to work with an The BookShelf server that you or someone you know is hosting. This app does not provide any content.</p>
+    <p v-if="!serverConnectionConfigs.length" class="mt-2 text-center text-error" v-html="$strings.MessageAudiobookshelfServerRequired" />
 
     <modals-custom-headers-modal v-model="showAddCustomHeaders" :custom-headers.sync="serverConfig.customHeaders" />
   </div>
@@ -95,6 +95,7 @@ export default {
       processing: false,
       serverConfig: {
         address: null,
+        version: null,
         username: null,
         customHeaders: null
       },
@@ -107,7 +108,8 @@ export default {
         state: null,
         verifier: null,
         challenge: null,
-        buttonText: 'Login with OpenID'
+        buttonText: 'Login with OpenID',
+        enforceHTTPs: true // RFC 6749, Section 10.9 requires https
       }
     }
   },
@@ -155,7 +157,7 @@ export default {
      */
     async clickLoginWithOpenId() {
       // oauth standard requires https explicitly
-      if (!this.serverConfig.address.startsWith('https')) {
+      if (!this.serverConfig.address.startsWith('https') && this.oauth.enforceHTTPs) {
         console.warn(`[SSO] Oauth2 requires HTTPS`)
         this.$toast.error(`SSO: The URL to the server must be https:// secured`)
         return
@@ -179,14 +181,19 @@ export default {
       const client_id = redirectUrl.searchParams.get('client_id')
       const scope = redirectUrl.searchParams.get('scope')
       const state = redirectUrl.searchParams.get('state')
+      let redirect_uri_param = redirectUrl.searchParams.get('redirect_uri')
+      // Backwards compatability with 2.6.0
+      if (this.serverConfig.version === '2.6.0') {
+        redirect_uri_param = 'audiobookshelf://oauth'
+      }
 
-      if (!client_id || !scope || !state) {
-        console.warn(`[SSO] Invalid OpenID URL - client_id scope or state missing: ${redirectUrl}`)
+      if (!client_id || !scope || !state || !redirect_uri_param) {
+        console.warn(`[SSO] Invalid OpenID URL - client_id scope state or redirect_uri missing: ${redirectUrl}`)
         this.$toast.error(`SSO: Invalid answer`)
         return
       }
 
-      if (redirectUrl.protocol !== 'https:') {
+      if (redirectUrl.protocol !== 'https:' && this.oauth.enforceHTTPs) {
         console.warn(`[SSO] Insecure Redirection by SSO provider: ${redirectUrl.protocol} is not allowed. Use HTTPS`)
         this.$toast.error(`SSO: The SSO provider must return a HTTPS secured URL`)
         return
@@ -195,8 +202,8 @@ export default {
       // We need to verify if the state is the same later
       this.oauth.state = state
 
-      const host = `https://${redirectUrl.host}`
-      const buildUrl = `${host}${redirectUrl.pathname}?response_type=code` + `&client_id=${encodeURIComponent(client_id)}&scope=${encodeURIComponent(scope)}&state=${encodeURIComponent(state)}` + `&redirect_uri=${encodeURIComponent('audiobookshelf://oauth')}` + `&code_challenge=${encodeURIComponent(this.oauth.challenge)}&code_challenge_method=S256`
+      const host = `${redirectUrl.protocol}//${redirectUrl.host}`
+      const buildUrl = `${host}${redirectUrl.pathname}?response_type=code` + `&client_id=${encodeURIComponent(client_id)}&scope=${encodeURIComponent(scope)}&state=${encodeURIComponent(state)}` + `&redirect_uri=${encodeURIComponent(redirect_uri_param)}` + `&code_challenge=${encodeURIComponent(this.oauth.challenge)}&code_challenge_method=S256`
 
       // example url for authentik
       // const authURL = "https://authentik/application/o/authorize/?response_type=code&client_id=41cd96f...&redirect_uri=audiobookshelf%3A%2F%2Foauth&scope=openid%20openid%20email%20profile&state=asdds..."
@@ -243,8 +250,11 @@ export default {
       this.oauth.verifier = verifier
       this.oauth.challenge = challenge
 
-      // set parameter isRest to true, so the backend wont attempt a redirect after we call backend:/callback in exchangeCodeForToken
-      const backendEndpoint = `${url}/auth/openid?code_challenge=${challenge}&code_challenge_method=S256&isRest=true`
+      let backendEndpoint = `${url}/auth/openid?code_challenge=${challenge}&code_challenge_method=S256&redirect_uri=${encodeURIComponent('audiobookshelf://oauth')}&client_id=${encodeURIComponent('Audiobookshelf-App')}&response_type=code`
+      // Backwards compatability with 2.6.0
+      if (this.serverConfig.version === '2.6.0') {
+        backendEndpoint += '&isRest=true'
+      }
 
       try {
         const response = await CapacitorHttp.get({
@@ -608,6 +618,7 @@ export default {
           this.showAuth = true
           this.authMethods = statusData.data.authMethods || []
           this.oauth.buttonText = statusData.data.authFormData?.authOpenIDButtonText || 'Login with OpenID'
+          this.serverConfig.version = statusData.data.serverVersion
 
           if (statusData.data.authFormData?.authOpenIDAutoLaunch) {
             this.clickLoginWithOpenId()
@@ -801,6 +812,7 @@ export default {
       this.serverConfig.userId = user.id
       this.serverConfig.token = user.token
       this.serverConfig.username = user.username
+      delete this.serverConfig.version
 
       var serverConnectionConfig = await this.$db.setServerConnectionConfig(this.serverConfig)
 

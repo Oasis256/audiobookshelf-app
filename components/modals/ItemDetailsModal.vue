@@ -2,7 +2,7 @@
   <modals-modal v-model="show" :width="400" height="100%">
     <template #outer>
       <div class="absolute top-8 left-4 z-40">
-        <p class="text-white text-2xl truncate">Details</p>
+        <p class="text-white text-2xl truncate">{{ $strings.HeaderDetails }}</p>
       </div>
     </template>
 
@@ -10,7 +10,7 @@
       <div class="w-full overflow-x-hidden overflow-y-auto bg-primary rounded-lg border border-white border-opacity-20 p-2" style="max-height: 75%" @click.stop>
         <p class="mb-2">{{ mediaMetadata.title }}</p>
 
-        <div v-if="size" class="text-sm mb-2">Size: {{ $bytesPretty(size) }}</div>
+        <div v-if="size" class="text-sm mb-2">{{ $strings.LabelSize }}: {{ $bytesPretty(size) }}</div>
 
         <p class="mb-1 text-xs text-gray-200">ID: {{ _libraryItem.id }}</p>
       </div>

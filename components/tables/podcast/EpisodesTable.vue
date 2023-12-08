@@ -3,7 +3,7 @@
     <!-- Podcast episode downloads queue -->
     <div v-if="episodeDownloadsQueued.length" class="px-4 py-2 my-2 bg-info bg-opacity-40 text-sm font-semibold rounded-md text-gray-100 relative w-full">
       <div class="flex items-center">
-        <p class="text-sm py-1">{{ episodeDownloadsQueued.length }} Episode(s) queued for download</p>
+        <p class="text-sm py-1">{{ $getString('MessageEpisodesQueuedForDownload', [episodeDownloadsQueued.length]) }}</p>
         <div class="flex-grow" />
         <span v-if="isAdminOrUp" class="material-icons text-xl ml-3 cursor-pointer" @click="clearDownloadQueue">close</span>
       </div>
@@ -13,12 +13,12 @@
     <div v-if="episodesDownloading.length" class="px-4 py-2 my-2 bg-success bg-opacity-20 text-sm font-semibold rounded-md text-gray-100 relative w-full">
       <div v-for="episode in episodesDownloading" :key="episode.id" class="flex items-center">
         <widgets-loading-spinner />
-        <p class="text-sm py-1 pl-4">Downloading episode "{{ episode.episodeDisplayTitle }}"</p>
+        <p class="text-sm py-1 pl-4">{{ $strings.MessageDownloadingEpisode }} "{{ episode.episodeDisplayTitle }}"</p>
       </div>
     </div>
 
     <div class="flex items-center">
-      <p class="text-lg mb-1 font-semibold">Episodes ({{ episodesFiltered.length }})</p>
+      <p class="text-lg mb-1 font-semibold">{{ $strings.HeaderEpisodes }} ({{ episodesFiltered.length }})</p>
 
       <div class="flex-grow" />
 
@@ -82,46 +82,6 @@ export default {
       sortKey: 'publishedAt',
       sortDesc: true,
       filterKey: 'incomplete',
-      episodeSortItems: [
-        {
-          text: 'Pub Date',
-          value: 'publishedAt'
-        },
-        {
-          text: 'Title',
-          value: 'title'
-        },
-        {
-          text: 'Season',
-          value: 'season'
-        },
-        {
-          text: 'Episode',
-          value: 'episode'
-        }
-      ],
-      filterItems: [
-        {
-          text: 'Show All',
-          value: 'all'
-        },
-        {
-          text: 'Incomplete',
-          value: 'incomplete'
-        },
-        {
-          text: 'In Progress',
-          value: 'inProgress'
-        },
-        {
-          text: 'Complete',
-          value: 'complete'
-        },
-        {
-          text: 'Downloaded',
-          value: 'downloaded'
-        }
-      ],
       fetchingRSSFeed: false,
       podcastFeedEpisodes: [],
       showPodcastEpisodeFeed: false,
@@ -155,6 +115,50 @@ export default {
     },
     episodesAreFiltered() {
       return this.episodesFiltered.length !== this.episodesCopy.length
+    },
+    episodeSortItems() {
+      return [
+        {
+          text: this.$strings.LabelPubDate,
+          value: 'publishedAt'
+        },
+        {
+          text: this.$strings.LabelTitle,
+          value: 'title'
+        },
+        {
+          text: this.$strings.LabelSeason,
+          value: 'season'
+        },
+        {
+          text: this.$strings.LabelEpisode,
+          value: 'episode'
+        }
+      ]
+    },
+    filterItems() {
+      return [
+        {
+          text: this.$strings.LabelShowAll,
+          value: 'all'
+        },
+        {
+          text: this.$strings.LabelIncomplete,
+          value: 'incomplete'
+        },
+        {
+          text: this.$strings.LabelInProgress,
+          value: 'inProgress'
+        },
+        {
+          text: this.$strings.LabelComplete,
+          value: 'complete'
+        },
+        {
+          text: this.$strings.LabelDownloaded,
+          value: 'downloaded'
+        }
+      ]
     },
     episodesFiltered() {
       return this.episodesCopy.filter((ep) => {
@@ -230,7 +234,7 @@ export default {
     },
     async searchEpisodes() {
       if (!this.networkConnected) {
-        return this.$toast.error('No network connection')
+        return this.$toast.error(this.$strings.MessageNoNetworkConnection)
       }
 
       if (!this.mediaMetadata.feedUrl) {

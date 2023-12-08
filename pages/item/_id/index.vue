@@ -29,22 +29,29 @@
 
       <div v-if="hasLocal" class="mx-1">
         <div v-if="isLocalOnly" class="w-full rounded-md bg-warning/10 border border-warning p-4">
+<<<<<<< HEAD
           <p class="text-sm">Media is not linked to The BookShelf server. No progress will be synced.</p>
         </div>
         <div v-else-if="currentServerConnectionConfigId && !isLocalMatchingServerAddress" class="w-full rounded-md bg-warning/10 border border-warning p-4">
           <p class="text-sm">Media is linked to The BookShelf server on a different address ({{ localLibraryItem.serverAddress }}). Progress will be synced when connected to this server address.</p>
+=======
+          <p class="text-sm">{{ $strings.MessageMediaNotLinkedToServer }}</p>
+        </div>
+        <div v-else-if="currentServerConnectionConfigId && !isLocalMatchingServerAddress" class="w-full rounded-md bg-warning/10 border border-warning p-4">
+          <p class="text-sm">{{ $getString('MessageMediaLinkedToADifferentServer', [localLibraryItem.serverAddress]) }}</p>
+>>>>>>> ddb1796891d7d63690771a308f136e9ce34e24c9
         </div>
         <div v-else-if="currentServerConnectionConfigId && !isLocalMatchingUser" class="w-full rounded-md bg-warning/10 border border-warning p-4">
-          <p class="text-sm">Media is linked to this server but was downloaded by a different user. Progress will only be synced to the user that downloaded it.</p>
+          <p class="text-sm">{{ $strings.MessageMediaLinkedToADifferentUser }}</p>
         </div>
         <div v-else-if="currentServerConnectionConfigId && !isLocalMatchingConnectionConfig" class="w-full rounded-md bg-warning/10 border border-warning p-4">
           <p class="text-sm">Media is linked to a different server connection config. Downloaded User Id: {{ localLibraryItem.serverUserId }}. Downloaded Server Address: {{ localLibraryItem.serverAddress }}. Currently connected User Id: {{ user.id }}. Currently connected server address: {{ currentServerAddress }}.</p>
         </div>
         <div v-else-if="isLocalMatchingConnectionConfig" class="w-full rounded-md bg-success/10 border border-success p-4">
-          <p class="text-sm">Downloaded media is linked to this server</p>
+          <p class="text-sm">{{ $strings.MessageMediaLinkedToThisServer }}</p>
         </div>
         <div v-else-if="isLocal && libraryItem.serverAddress" class="w-full rounded-md bg-slate-300/10 border border-slate-300 p-4">
-          <p class="text-sm">Linked to server {{ libraryItem.serverAddress }}</p>
+          <p class="text-sm">{{ $getString('MessageMediaLinkedToServer', [libraryItem.serverAddress]) }}</p>
         </div>
       </div>
 
@@ -53,11 +60,11 @@
         <div v-if="showPlay || showRead" class="flex mt-4 -mx-1">
           <ui-btn v-if="showPlay" color="success" class="flex items-center justify-center flex-grow mx-1" :padding-x="4" @click="playClick">
             <span class="material-icons">{{ playerIsPlaying ? 'pause' : 'play_arrow' }}</span>
-            <span class="px-1 text-sm">{{ playerIsPlaying ? 'Pause' : isPodcast ? 'Next Episode' : hasLocal ? 'Play' : 'Stream' }}</span>
+            <span class="px-1 text-sm">{{ playerIsPlaying ? $strings.ButtonPause : isPodcast ? $strings.ButtonNextEpisode : hasLocal ? $strings.ButtonPlay : $strings.ButtonStream }}</span>
           </ui-btn>
           <ui-btn v-if="showRead" color="info" class="flex items-center justify-center mx-1" :class="showPlay ? '' : 'flex-grow'" :padding-x="2" @click="readBook">
             <span class="material-icons">auto_stories</span>
-            <span v-if="!showPlay" class="px-2 text-base">Read {{ ebookFormat }}</span>
+            <span v-if="!showPlay" class="px-2 text-base">{{ $strings.ButtonRead }} {{ ebookFormat }}</span>
           </ui-btn>
           <ui-btn v-if="showDownload" :color="downloadItem ? 'warning' : 'primary'" class="flex items-center justify-center mx-1" :padding-x="2" @click="downloadClick">
             <span class="material-icons" :class="downloadItem ? 'animate-pulse' : ''">{{ downloadItem ? 'downloading' : 'download' }}</span>
@@ -68,20 +75,20 @@
         </div>
 
         <div v-if="!isPodcast && progressPercent > 0" class="px-4 py-2 bg-primary text-sm font-semibold rounded-md text-gray-200 mt-4 text-center">
-          <p>Your Progress: {{ Math.round(progressPercent * 100) }}%</p>
-          <p v-if="!useEBookProgress && !userIsFinished" class="text-gray-400 text-xs">{{ $elapsedPretty(userTimeRemaining) }} remaining</p>
-          <p v-else-if="userIsFinished" class="text-gray-400 text-xs">Finished {{ $formatDate(userProgressFinishedAt) }}</p>
+          <p>{{ $strings.LabelYourProgress }}: {{ Math.round(progressPercent * 100) }}%</p>
+          <p v-if="!useEBookProgress && !userIsFinished" class="text-gray-400 text-xs">{{ $getString('LabelTimeRemaining', [$elapsedPretty(userTimeRemaining)]) }}</p>
+          <p v-else-if="userIsFinished" class="text-gray-400 text-xs">{{ $strings.LabelFinished }} {{ $formatDate(userProgressFinishedAt) }}</p>
         </div>
       </div>
 
       <div v-if="downloadItem" class="py-3">
-        <p v-if="downloadItem.itemProgress == 1" class="text-center text-lg">Download complete. Processing...</p>
-        <p v-else class="text-center text-lg">Downloading! ({{ Math.round(downloadItem.itemProgress * 100) }}%)</p>
+        <p v-if="downloadItem.itemProgress == 1" class="text-center text-lg">{{ $strings.MessageDownloadCompleteProcessing }}</p>
+        <p v-else class="text-center text-lg">{{ $strings.MessageDownloading }} ({{ Math.round(downloadItem.itemProgress * 100) }}%)</p>
       </div>
 
       <!-- metadata -->
       <div id="metadata" class="grid gap-2 my-2" style>
-        <div v-if="podcastAuthor || (bookAuthors && bookAuthors.length)" class="text-white text-opacity-60 uppercase text-sm">Author</div>
+        <div v-if="podcastAuthor || (bookAuthors && bookAuthors.length)" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelAuthor }}</div>
         <div v-if="podcastAuthor" class="text-sm">{{ podcastAuthor }}</div>
         <div v-else-if="bookAuthors && bookAuthors.length" class="text-sm">
           <template v-for="(author, index) in bookAuthors">
@@ -90,10 +97,10 @@
           </template>
         </div>
 
-        <div v-if="podcastType" class="text-white text-opacity-60 uppercase text-sm">Type</div>
+        <div v-if="podcastType" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelType }}</div>
         <div v-if="podcastType" class="text-sm capitalize">{{ podcastType }}</div>
 
-        <div v-if="series && series.length" class="text-white text-opacity-60 uppercase text-sm">Series</div>
+        <div v-if="series && series.length" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelSeries }}</div>
         <div v-if="series && series.length" class="truncate text-sm">
           <template v-for="(series, index) in seriesList">
             <nuxt-link :key="series.id" :to="`/bookshelf/series/${series.id}`" class="underline">{{ series.text }}</nuxt-link
@@ -101,10 +108,10 @@
           </template>
         </div>
 
-        <div v-if="numTracks" class="text-white text-opacity-60 uppercase text-sm">Duration</div>
+        <div v-if="numTracks" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelDuration }}</div>
         <div v-if="numTracks" class="text-sm">{{ $elapsedPretty(duration) }}</div>
 
-        <div v-if="narrators && narrators.length" class="text-white text-opacity-60 uppercase text-sm">{{ narrators.length === 1 ? 'Narrator' : 'Narrators' }}</div>
+        <div v-if="narrators && narrators.length" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelNarrators }}</div>
         <div v-if="narrators && narrators.length" class="truncate text-sm">
           <template v-for="(narrator, index) in narrators">
             <nuxt-link :key="narrator" :to="`/bookshelf/library?filter=narrators.${$encode(narrator)}`" class="underline">{{ narrator }}</nuxt-link
@@ -112,7 +119,7 @@
           </template>
         </div>
 
-        <div v-if="genres.length" class="text-white text-opacity-60 uppercase text-sm">{{ genres.length === 1 ? 'Genre' : 'Genres' }}</div>
+        <div v-if="genres.length" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelGenres }}</div>
         <div v-if="genres.length" class="truncate text-sm">
           <template v-for="(genre, index) in genres">
             <nuxt-link :key="genre" :to="`/bookshelf/library?filter=genres.${$encode(genre)}`" class="underline">{{ genre }}</nuxt-link
@@ -120,7 +127,7 @@
           </template>
         </div>
 
-        <div v-if="publishedYear" class="text-white text-opacity-60 uppercase text-sm">Published</div>
+        <div v-if="publishedYear" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelPublishYear }}</div>
         <div v-if="publishedYear" class="text-sm">{{ publishedYear }}</div>
       </div>
 
@@ -598,7 +605,7 @@ export default {
         if (!foldersWithMediaType.length) {
           localFolder = {
             id: `internal-${this.mediaType}`,
-            name: 'Internal App Storage',
+            name: this.$strings.LabelInternalAppStorage,
             mediaType: this.mediaType
           }
         } else if (foldersWithMediaType.length === 1 && internalStorageFolder) {
