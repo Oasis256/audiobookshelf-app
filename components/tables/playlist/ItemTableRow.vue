@@ -8,13 +8,16 @@
         <div class="item-table-content h-full px-2 flex items-center">
           <div class="max-w-full">
             <p class="truncate block text-sm">{{ itemTitle }} <span v-if="localLibraryItem" class="material-icons text-success text-base align-text-bottom">download_done</span></p>
-            <p v-if="authorName" class="truncate block text-gray-300 text-xs">{{ authorName }}</p>
-            <p class="text-xxs text-gray-400">{{ itemDuration }}</p>
+            <p v-if="authorName" class="truncate block text-fg-muted text-xs">{{ authorName }}</p>
+            <p class="text-xxs text-fg-muted">{{ itemDuration }}</p>
           </div>
         </div>
         <div class="w-8 min-w-8 flex justify-center">
-          <button v-if="showPlayBtn" class="w-8 h-8 rounded-full border border-white border-opacity-20 flex items-center justify-center" @click.stop.prevent="playClick">
-            <span class="material-icons" :class="streamIsPlaying ? '' : 'text-success'">{{ streamIsPlaying ? 'pause' : 'play_arrow' }}</span>
+          <button v-if="showPlayBtn" class="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center" @click.stop.prevent="playClick">
+            <span v-if="!playerIsStartingForThisMedia" class="material-icons" :class="streamIsPlaying ? '' : 'text-success'">{{ streamIsPlaying ? 'pause' : 'play_arrow' }}</span>
+            <svg v-else class="animate-spin" style="width: 18px; height: 18px" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
+            </svg>
           </button>
         </div>
         <div class="w-8 min-w-8 flex justify-center">
@@ -117,6 +120,15 @@ export default {
     streamIsPlaying() {
       return this.$store.state.playerIsPlaying && this.isStreaming
     },
+    playerIsStartingPlayback() {
+      // Play has been pressed and waiting for native play response
+      return this.$store.state.playerIsStartingPlayback
+    },
+    playerIsStartingForThisMedia() {
+      const mediaId = this.$store.state.playerStartingPlaybackMediaId
+      let thisMediaId = this.episodeId || this.libraryItem.id
+      return mediaId === thisMediaId
+    },
     userItemProgress() {
       return this.$store.getters['user/getUserMediaProgress'](this.libraryItem.id, this.episodeId)
     },
@@ -142,10 +154,14 @@ export default {
       this.$emit('showMore', playlistItem)
     },
     async playClick() {
+      if (this.playerIsStartingPlayback) return
+
       await this.$hapticsImpact()
+      let mediaId = this.episodeId || this.libraryItem.id
       if (this.streamIsPlaying) {
         this.$eventBus.$emit('pause-item')
       } else if (this.localLibraryItem) {
+        this.$store.commit('setPlayerIsStartingPlayback', mediaId)
         this.$eventBus.$emit('play-item', {
           libraryItemId: this.localLibraryItem.id,
           episodeId: this.localEpisode?.id,
@@ -153,6 +169,7 @@ export default {
           serverEpisodeId: this.episodeId
         })
       } else {
+        this.$store.commit('setPlayerIsStartingPlayback', mediaId)
         this.$eventBus.$emit('play-item', {
           libraryItemId: this.libraryItem.id,
           episodeId: this.episodeId

@@ -10,14 +10,14 @@
             {{ playlistName }}
           </h1>
           <div class="flex-grow" />
-          <ui-btn v-if="showPlayButton" :disabled="streaming" color="success" :padding-x="4" small class="flex items-center justify-center text-center h-9 mr-2 w-24" @click="clickPlay">
+          <ui-btn v-if="showPlayButton" :disabled="streaming" color="success" :padding-x="4" :loading="playerIsStartingForThisMedia" small class="flex items-center justify-center text-center h-9 mr-2 w-24" @click="clickPlay">
             <span v-show="!streaming" class="material-icons -ml-2 pr-1 text-white">play_arrow</span>
             {{ streaming ? $strings.ButtonPlaying : $strings.ButtonPlay }}
           </ui-btn>
         </div>
 
         <div class="my-8 max-w-2xl px-3">
-          <p class="text-base text-gray-100">{{ description }}</p>
+          <p class="text-base text-fg">{{ description }}</p>
         </div>
 
         <tables-playlist-items-table :items="playlistItems" :playlist-id="playlist.id" @showMore="showMore" />
@@ -76,7 +76,8 @@ export default {
       showMoreMenu: false,
       processing: false,
       selectedLibraryItem: null,
-      selectedEpisode: null
+      selectedEpisode: null,
+      mediaIdStartingPlayback: null
     }
   },
   computed: {
@@ -108,6 +109,15 @@ export default {
     },
     showPlayButton() {
       return this.playableItems.length
+    },
+    playerIsStartingPlayback() {
+      // Play has been pressed and waiting for native play response
+      return this.$store.state.playerIsStartingPlayback
+    },
+    playerIsStartingForThisMedia() {
+      if (!this.mediaIdStartingPlayback) return false
+      const mediaId = this.$store.state.playerStartingPlaybackMediaId
+      return mediaId === this.mediaIdStartingPlayback
     }
   },
   methods: {
@@ -122,6 +132,8 @@ export default {
         return !prog?.isFinished
       })
       if (nextItem) {
+        this.mediaIdStartingPlayback = nextItem.episodeId || nextItem.libraryItemId
+        this.$store.commit('setPlayerIsStartingPlayback', this.mediaIdStartingPlayback)
         if (nextItem.localLibraryItem) {
           this.$eventBus.$emit('play-item', { libraryItemId: nextItem.localLibraryItem.id, episodeId: nextItem.localEpisode?.id, serverLibraryItemId: nextItem.libraryItemId, serverEpisodeId: nextItem.episodeId })
         } else {

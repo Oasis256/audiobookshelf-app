@@ -8,7 +8,7 @@
         <img src="/Logo.png" class="h-20 w-20 mb-2" />
         <h1 class="text-2xl">The Book Shelf</h1>
       </div>
-      <p class="hidden absolute short:block top-1.5 left-12 p-2text-xl">The Book Shelf</p>
+      <p class="hidden absolute short:block top-1.5 left-12 p-2text-xl">AudbleTales</p>
 
       <connection-server-connect-form v-if="deviceData" />
     </div>

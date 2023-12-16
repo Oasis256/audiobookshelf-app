@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full layout-wrapper bg-bg text-white">
+  <div class="w-full layout-wrapper bg-bg">
     <app-appbar />
     <div id="content" class="overflow-hidden relative" :class="isPlayerOpen ? 'playerOpen' : ''">
       <Nuxt :key="currentLang" />
@@ -221,23 +221,22 @@ export default {
       const prog = payload.data // MediaProgress
       console.log(`[default] userMediaProgressUpdate checking for local media progress ${payload.id}`)
 
-      // Update local media progress if exists
+      // Check if this media item is currently open in the player, paused, and this progress update is coming from a different session
+      const isMediaOpenInPlayer = this.$store.getters['getIsMediaStreaming'](prog.libraryItemId, prog.episodeId)
+      if (isMediaOpenInPlayer && this.$store.getters['getCurrentPlaybackSessionId'] !== payload.sessionId && !this.$store.state.playerIsPlaying) {
+        console.log('[default] userMediaProgressUpdated for current open media item', payload.data.currentTime)
+        this.$eventBus.$emit('playback-time-update', payload.data.currentTime)
+      }
+
+      // Get local media progress if exists
       const localProg = await this.$db.getLocalMediaProgressForServerItem({ libraryItemId: prog.libraryItemId, episodeId: prog.episodeId })
 
       let newLocalMediaProgress = null
+      // Progress update is more recent then local progress
       if (localProg && localProg.lastUpdate < prog.lastUpdate) {
         if (localProg.currentTime == prog.currentTime && localProg.isFinished == prog.isFinished) {
           console.log('[default] syncing progress server lastUpdate > local lastUpdate but currentTime and isFinished is equal')
           return
-        } else {
-          console.log(`[default] syncing progress server lastUpdate > local lastUpdate. server currentTime=${prog.currentTime} local currentTime=${localProg.currentTime} | server/local isFinished=${prog.isFinished}/${localProg.isFinished}`)
-        }
-
-        // Check if this media item is currently open in the player, paused, and this progress update is coming from a different session
-        const isMediaOpenInPlayer = this.$store.getters['getIsMediaStreaming'](prog.libraryItemId, prog.episodeId)
-        if (isMediaOpenInPlayer && this.$store.getters['getCurrentPlaybackSessionId'] !== payload.sessionId && !this.$store.state.playerIsPlaying) {
-          console.log('[default] userMediaProgressUpdated for current open media item', payload.data.currentTime)
-          this.$eventBus.$emit('playback-time-update', payload.data.currentTime)
         }
 
         // Server progress is more up-to-date
@@ -318,6 +317,8 @@ export default {
     if (this.$store.state.isFirstLoad) {
       this.$store.commit('setIsFirstLoad', false)
 
+      this.loadSavedSettings()
+
       const deviceData = await this.$db.getDeviceData()
       this.$store.commit('setDeviceData', deviceData)
 
@@ -336,7 +337,6 @@ export default {
       console.log(`[default] finished connection attempt or already connected ${!!this.user}`)
       await this.syncLocalSessions()
 
-      this.loadSavedSettings()
       this.hasMounted = true
 
       console.log('[default] fully initialized')

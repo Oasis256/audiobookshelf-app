@@ -5,8 +5,9 @@ import { Dialog } from '@capacitor/dialog'
 import { AbsFileSystem } from '@/plugins/capacitor'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { Clipboard } from '@capacitor/clipboard'
-import { formatDistance, format, addDays, isDate } from 'date-fns'
 import { Capacitor } from '@capacitor/core'
+import { formatDistance, format, addDays, isDate, setDefaultOptions } from 'date-fns'
+import * as locale from 'date-fns/locale'
 
 Vue.directive('click-outside', vClickOutside.directive)
 
@@ -37,6 +38,11 @@ Vue.prototype.$getAndroidSDKVersion = async () => {
 
 Vue.prototype.$encodeUriPath = (path) => {
   return path.replace(/\\/g, '/').replace(/%/g, '%25').replace(/#/g, '%23')
+}
+
+Vue.prototype.$setDateFnsLocale = (localeString) => {
+  if (!locale[localeString]) return 0
+  return setDefaultOptions({ locale: locale[localeString] })
 }
 Vue.prototype.$dateDistanceFromNow = (unixms) => {
   if (!unixms) return ''
@@ -172,14 +178,14 @@ Vue.prototype.$sanitizeFilename = (input, colonReplacement = ' - ') => {
 }
 
 function xmlToJson(xml) {
-  const json = {};
+  const json = {}
   for (const res of xml.matchAll(/(?:<(\w*)(?:\s[^>]*)*>)((?:(?!<\1).)*)(?:<\/\1>)|<(\w*)(?:\s*)*\/>/gm)) {
-    const key = res[1] || res[3];
-    const value = res[2] && xmlToJson(res[2]);
-    json[key] = ((value && Object.keys(value).length) ? value : res[2]) || null;
+    const key = res[1] || res[3]
+    const value = res[2] && xmlToJson(res[2])
+    json[key] = ((value && Object.keys(value).length) ? value : res[2]) || null
 
   }
-  return json;
+  return json
 }
 Vue.prototype.$xmlToJson = xmlToJson
 
@@ -238,6 +244,13 @@ Vue.prototype.$sanitizeSlug = (str) => {
 export default ({ store, app }, inject) => {
   const eventBus = new Vue()
   inject('eventBus', eventBus)
+
+  // Set theme
+  app.$localStore?.getTheme()?.then((theme) => {
+    if (theme) {
+      document.documentElement.dataset.theme = theme
+    }
+  })
 
   // iOS Only
   //  backButton event does not work with iOS swipe navigation so use this workaround

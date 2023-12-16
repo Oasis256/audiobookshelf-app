@@ -11,25 +11,28 @@
         <p v-else>No Local Media Progress</p>
       </template> -->
 
-      <p v-if="publishedAt" class="text-xs text-gray-400 mb-1">Published {{ $formatDate(publishedAt, 'MMM do, yyyy') }}</p>
+      <p v-if="publishedAt" class="text-xs text-fg-muted mb-1">Published {{ $formatDate(publishedAt, 'MMM do, yyyy') }}</p>
 
       <p class="text-sm font-semibold">
         {{ title }}
       </p>
 
-      <p class="text-sm text-gray-200 episode-subtitle mt-1.5 mb-0.5" v-html="subtitle" />
+      <p class="text-sm text-fg episode-subtitle mt-1.5 mb-0.5" v-html="subtitle" />
 
       <div v-if="episodeNumber || season || episodeType" class="flex py-2 items-center -mx-0.5">
-        <div v-if="episodeNumber" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-50 rounded-full text-xs font-light text-gray-200">Episode #{{ episodeNumber }}</div>
-        <div v-if="season" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-50 rounded-full text-xs font-light text-gray-200">Season #{{ season }}</div>
-        <div v-if="episodeType" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-50 rounded-full text-xs font-light text-gray-200 capitalize">
+        <div v-if="episodeNumber" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-50 rounded-full text-xs font-light text-fg">Episode #{{ episodeNumber }}</div>
+        <div v-if="season" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-50 rounded-full text-xs font-light text-fg">Season #{{ season }}</div>
+        <div v-if="episodeType" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-50 rounded-full text-xs font-light text-fg capitalize">
           {{ episodeType }}
         </div>
       </div>
 
       <div class="flex items-center pt-2">
-        <div class="h-8 px-4 border border-white border-opacity-20 hover:bg-white hover:bg-opacity-10 rounded-full flex items-center justify-center cursor-pointer" :class="userIsFinished ? 'text-white text-opacity-40' : ''" @click.stop="playClick">
-          <span class="material-icons" :class="streamIsPlaying ? '' : 'text-success'">{{ streamIsPlaying ? 'pause' : 'play_arrow' }}</span>
+        <div class="h-8 px-4 border border-border rounded-full flex items-center justify-center cursor-pointer" :class="userIsFinished ? 'text-white text-opacity-40' : ''" @click.stop="playClick">
+          <span v-if="!playerIsStartingForThisMedia" class="material-icons" :class="streamIsPlaying ? '' : 'text-success'">{{ streamIsPlaying ? 'pause' : 'play_arrow' }}</span>
+          <svg v-else class="animate-spin" style="width: 24px; height: 24px" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
+          </svg>
           <p class="pl-2 pr-1 text-sm font-semibold">{{ timeRemaining }}</p>
         </div>
 
@@ -58,7 +61,6 @@
 </template>
 
 <script>
-import { Dialog } from '@capacitor/dialog'
 import { AbsFileSystem, AbsDownloader } from '@/plugins/capacitor'
 
 export default {
@@ -118,6 +120,14 @@ export default {
     },
     streamIsPlaying() {
       return this.$store.state.playerIsPlaying && this.isStreaming
+    },
+    playerIsStartingPlayback() {
+      // Play has been pressed and waiting for native play response
+      return this.$store.state.playerIsStartingPlayback
+    },
+    playerIsStartingForThisMedia() {
+      const mediaId = this.$store.state.playerStartingPlaybackMediaId
+      return mediaId === this.episode?.id
     },
     itemProgress() {
       if (this.isLocal) return this.$store.getters['globals/getLocalMediaProgressById'](this.libraryItemId, this.episode.id)
@@ -210,14 +220,7 @@ export default {
 
       console.log('Local folder', JSON.stringify(localFolder))
 
-      var startDownloadMessage = `Start download for "${this.title}" to folder ${localFolder.name}?`
-      const { value } = await Dialog.confirm({
-        title: 'Confirm',
-        message: startDownloadMessage
-      })
-      if (value) {
-        this.startDownload(localFolder)
-      }
+      this.startDownload(localFolder)
     },
     async startDownload(localFolder) {
       var payload = {
@@ -235,10 +238,14 @@ export default {
       }
     },
     async playClick() {
+      if (this.playerIsStartingPlayback) return
+
       await this.$hapticsImpact()
       if (this.streamIsPlaying) {
         this.$eventBus.$emit('pause-item')
       } else {
+        this.$store.commit('setPlayerIsStartingPlayback', this.episode.id)
+
         if (this.localEpisode && this.localLibraryItemId) {
           console.log('Play local episode', this.localEpisode.id, this.localLibraryItemId)
 

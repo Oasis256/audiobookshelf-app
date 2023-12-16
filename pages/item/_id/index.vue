@@ -2,7 +2,7 @@
   <div id="item-page" class="w-full h-full px-3 pb-4 overflow-y-auto overflow-x-hidden relative bg-bg">
     <div class="fixed top-0 left-0 w-full h-full pointer-events-none p-px z-10">
       <div class="w-full h-full" :style="{ backgroundColor: coverRgb }" />
-      <div class="w-full h-full absolute top-0 left-0" style="background: linear-gradient(169deg, rgba(0, 0, 0, 0.4) 0%, rgba(55, 56, 56, 1) 80%)" />
+      <div class="w-full h-full absolute top-0 left-0" style="background: var(--gradient-item-page)" />
     </div>
 
     <div class="z-10 relative">
@@ -24,7 +24,7 @@
       <!-- title -->
       <div class="text-center mb-2">
         <h1 class="text-xl font-semibold">{{ title }}</h1>
-        <p v-if="subtitle" class="text-gray-100 text-base">{{ subtitle }}</p>
+        <p v-if="subtitle" class="text-fg text-base">{{ subtitle }}</p>
       </div>
 
       <div v-if="hasLocal" class="mx-1">
@@ -40,18 +40,12 @@
         <div v-else-if="currentServerConnectionConfigId && !isLocalMatchingConnectionConfig" class="w-full rounded-md bg-warning/10 border border-warning p-4">
           <p class="text-sm">Media is linked to a different server connection config. Downloaded User Id: {{ localLibraryItem.serverUserId }}. Downloaded Server Address: {{ localLibraryItem.serverAddress }}. Currently connected User Id: {{ user.id }}. Currently connected server address: {{ currentServerAddress }}.</p>
         </div>
-        <div v-else-if="isLocalMatchingConnectionConfig" class="w-full rounded-md bg-success/10 border border-success p-4">
-          <p class="text-sm">{{ $strings.MessageMediaLinkedToThisServer }}</p>
-        </div>
-        <div v-else-if="isLocal && libraryItem.serverAddress" class="w-full rounded-md bg-slate-300/10 border border-slate-300 p-4">
-          <p class="text-sm">{{ $getString('MessageMediaLinkedToServer', [libraryItem.serverAddress]) }}</p>
-        </div>
       </div>
 
       <!-- action buttons -->
       <div class="col-span-full">
         <div v-if="showPlay || showRead" class="flex mt-4 -mx-1">
-          <ui-btn v-if="showPlay" color="success" class="flex items-center justify-center flex-grow mx-1" :padding-x="4" @click="playClick">
+          <ui-btn v-if="showPlay" color="success" class="flex items-center justify-center flex-grow mx-1" :loading="playerIsStartingForThisMedia" :padding-x="4" @click="playClick">
             <span class="material-icons">{{ playerIsPlaying ? 'pause' : 'play_arrow' }}</span>
             <span class="px-1 text-sm">{{ playerIsPlaying ? $strings.ButtonPause : isPodcast ? $strings.ButtonNextEpisode : hasLocal ? $strings.ButtonPlay : $strings.ButtonStream }}</span>
           </ui-btn>
@@ -67,10 +61,10 @@
           </ui-btn>
         </div>
 
-        <div v-if="!isPodcast && progressPercent > 0" class="px-4 py-2 bg-primary text-sm font-semibold rounded-md text-gray-200 mt-4 text-center">
+        <div v-if="!isPodcast && progressPercent > 0" class="px-4 py-2 bg-primary text-sm font-semibold rounded-md text-fg mt-4 text-center">
           <p>{{ $strings.LabelYourProgress }}: {{ Math.round(progressPercent * 100) }}%</p>
-          <p v-if="!useEBookProgress && !userIsFinished" class="text-gray-400 text-xs">{{ $getString('LabelTimeRemaining', [$elapsedPretty(userTimeRemaining)]) }}</p>
-          <p v-else-if="userIsFinished" class="text-gray-400 text-xs">{{ $strings.LabelFinished }} {{ $formatDate(userProgressFinishedAt) }}</p>
+          <p v-if="!useEBookProgress && !userIsFinished" class="text-fg-muted text-xs">{{ $getString('LabelTimeRemaining', [$elapsedPretty(userTimeRemaining)]) }}</p>
+          <p v-else-if="userIsFinished" class="text-fg-muted text-xs">{{ $strings.LabelFinished }} {{ $formatDate(userProgressFinishedAt) }}</p>
         </div>
       </div>
 
@@ -81,7 +75,7 @@
 
       <!-- metadata -->
       <div id="metadata" class="grid gap-2 my-2" style>
-        <div v-if="podcastAuthor || (bookAuthors && bookAuthors.length)" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelAuthor }}</div>
+        <div v-if="podcastAuthor || (bookAuthors && bookAuthors.length)" class="text-fg-muted uppercase text-sm">{{ $strings.LabelAuthor }}</div>
         <div v-if="podcastAuthor" class="text-sm">{{ podcastAuthor }}</div>
         <div v-else-if="bookAuthors && bookAuthors.length" class="text-sm">
           <template v-for="(author, index) in bookAuthors">
@@ -90,10 +84,10 @@
           </template>
         </div>
 
-        <div v-if="podcastType" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelType }}</div>
+        <div v-if="podcastType" class="text-fg-muted uppercase text-sm">{{ $strings.LabelType }}</div>
         <div v-if="podcastType" class="text-sm capitalize">{{ podcastType }}</div>
 
-        <div v-if="series && series.length" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelSeries }}</div>
+        <div v-if="series && series.length" class="text-fg-muted uppercase text-sm">{{ $strings.LabelSeries }}</div>
         <div v-if="series && series.length" class="truncate text-sm">
           <template v-for="(series, index) in seriesList">
             <nuxt-link :key="series.id" :to="`/bookshelf/series/${series.id}`" class="underline">{{ series.text }}</nuxt-link
@@ -101,10 +95,10 @@
           </template>
         </div>
 
-        <div v-if="numTracks" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelDuration }}</div>
+        <div v-if="numTracks" class="text-fg-muted uppercase text-sm">{{ $strings.LabelDuration }}</div>
         <div v-if="numTracks" class="text-sm">{{ $elapsedPretty(duration) }}</div>
 
-        <div v-if="narrators && narrators.length" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelNarrators }}</div>
+        <div v-if="narrators && narrators.length" class="text-fg-muted uppercase text-sm">{{ $strings.LabelNarrators }}</div>
         <div v-if="narrators && narrators.length" class="truncate text-sm">
           <template v-for="(narrator, index) in narrators">
             <nuxt-link :key="narrator" :to="`/bookshelf/library?filter=narrators.${$encode(narrator)}`" class="underline">{{ narrator }}</nuxt-link
@@ -112,7 +106,7 @@
           </template>
         </div>
 
-        <div v-if="genres.length" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelGenres }}</div>
+        <div v-if="genres.length" class="text-fg-muted uppercase text-sm">{{ $strings.LabelGenres }}</div>
         <div v-if="genres.length" class="truncate text-sm">
           <template v-for="(genre, index) in genres">
             <nuxt-link :key="genre" :to="`/bookshelf/library?filter=genres.${$encode(genre)}`" class="underline">{{ genre }}</nuxt-link
@@ -120,14 +114,14 @@
           </template>
         </div>
 
-        <div v-if="publishedYear" class="text-white text-opacity-60 uppercase text-sm">{{ $strings.LabelPublishYear }}</div>
+        <div v-if="publishedYear" class="text-fg-muted uppercase text-sm">{{ $strings.LabelPublishYear }}</div>
         <div v-if="publishedYear" class="text-sm">{{ publishedYear }}</div>
       </div>
 
       <div v-if="description" class="w-full py-2">
         <p ref="description" class="text-sm text-justify whitespace-pre-line font-light" :class="{ 'line-clamp-4': !showFullDescription }" style="hyphens: auto">{{ description }}</p>
 
-        <div v-if="descriptionClamped" class="text-white text-sm py-2" @click="showFullDescription = !showFullDescription">
+        <div v-if="descriptionClamped" class="text-fg text-sm py-2" @click="showFullDescription = !showFullDescription">
           {{ showFullDescription ? 'Read less' : 'Read more' }}
           <span class="material-icons align-middle text-base -mt-px">{{ showFullDescription ? 'expand_less' : 'expand_more' }}</span>
         </div>
@@ -211,7 +205,8 @@ export default {
       coverBgIsLight: false,
       windowWidth: 0,
       descriptionClamped: false,
-      showFullDescription: false
+      showFullDescription: false,
+      episodeStartingPlayback: null
     }
   },
   computed: {
@@ -399,6 +394,19 @@ export default {
     playerIsPlaying() {
       return this.$store.state.playerIsPlaying && (this.isStreaming || this.isPlaying)
     },
+    playerIsStartingPlayback() {
+      // Play has been pressed and waiting for native play response
+      return this.$store.state.playerIsStartingPlayback
+    },
+    playerIsStartingForThisMedia() {
+      const mediaId = this.$store.state.playerStartingPlaybackMediaId
+      if (this.isPodcast) {
+        if (!this.episodeStartingPlayback) return false
+        return mediaId === this.episodeStartingPlayback
+      } else {
+        return mediaId === this.serverLibraryItemId
+      }
+    },
     tracks() {
       return this.media.tracks || []
     },
@@ -494,6 +502,8 @@ export default {
       }
     },
     async play(startTime = null) {
+      if (this.playerIsStartingPlayback) return
+
       if (this.isPodcast) {
         this.episodes.sort((a, b) => {
           return String(b.publishedAt).localeCompare(String(a.publishedAt), undefined, { numeric: true, sensitivity: 'base' })
@@ -506,7 +516,7 @@ export default {
           } else {
             podcastProgress = this.$store.getters['globals/getLocalMediaProgressById'](this.libraryItemId, ep.id)
           }
-          return !podcastProgress || !podcastProgress.isFinished
+          return !podcastProgress?.isFinished
         })
 
         if (!episode) episode = this.episodes[0]
@@ -521,6 +531,8 @@ export default {
         }
         const serverEpisodeId = !this.isLocal ? episodeId : localEpisode?.serverEpisodeId || null
 
+        this.episodeStartingPlayback = serverEpisodeId
+        this.$store.commit('setPlayerIsStartingPlayback', serverEpisodeId)
         if (serverEpisodeId && this.serverLibraryItemId && this.isCasting) {
           // If casting and connected to server for local library item then send server library item id
           this.$eventBus.$emit('play-item', { libraryItemId: this.serverLibraryItemId, episodeId: serverEpisodeId })
@@ -549,6 +561,7 @@ export default {
           if (!value) return
         }
 
+        this.$store.commit('setPlayerIsStartingPlayback', this.serverLibraryItemId)
         this.$eventBus.$emit('play-item', { libraryItemId, serverLibraryItemId: this.serverLibraryItemId, startTime })
       }
     },
@@ -615,7 +628,6 @@ export default {
       }
 
       console.log('Local folder', JSON.stringify(localFolder))
-
       let startDownloadMessage = `Start download for "${this.title}" with ${this.numTracks} audio track${this.numTracks == 1 ? '' : 's'} to folder ${localFolder.name}?`
       if (!this.isIos && this.showRead) {
         if (this.numTracks > 0) {

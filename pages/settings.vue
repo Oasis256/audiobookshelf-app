@@ -1,7 +1,7 @@
 <template>
   <div class="w-full h-full px-4 py-8 overflow-y-auto">
     <!-- Display settings -->
-    <p class="uppercase text-xs font-semibold text-gray-300 mb-2">{{ $strings.HeaderUserInterfaceSettings }}</p>
+    <p class="uppercase text-xs font-semibold text-fg-muted mb-2">{{ $strings.HeaderUserInterfaceSettings }}</p>
     <div class="flex items-center py-3" @click="toggleEnableAltView">
       <div class="w-10 flex justify-center">
         <ui-toggle-switch v-model="enableBookshelfView" @input="saveSettings" />
@@ -27,9 +27,15 @@
         <ui-text-input :value="languageOption" readonly append-icon="expand_more" style="max-width: 225px" />
       </div>
     </div>
+    <div class="py-3 flex items-center">
+      <p class="pr-4 w-36">{{ $strings.LabelTheme }}</p>
+      <div @click.stop="showThemeOptions">
+        <ui-text-input :value="themeOption" readonly append-icon="expand_more" style="max-width: 225px" />
+      </div>
+    </div>
 
     <!-- Playback settings -->
-    <p class="uppercase text-xs font-semibold text-gray-300 mb-2 mt-10">{{ $strings.HeaderPlaybackSettings }}</p>
+    <p class="uppercase text-xs font-semibold text-fg-muted mb-2 mt-10">{{ $strings.HeaderPlaybackSettings }}</p>
     <div v-if="!isiOS" class="flex items-center py-3" @click="toggleDisableAutoRewind">
       <div class="w-10 flex justify-center">
         <ui-toggle-switch v-model="settings.disableAutoRewind" @input="saveSettings" />
@@ -58,7 +64,7 @@
 
     <!-- Sleep timer settings -->
     <template v-if="!isiOS">
-      <p class="uppercase text-xs font-semibold text-gray-300 mb-2 mt-10">{{ $strings.HeaderSleepTimerSettings }}</p>
+      <p class="uppercase text-xs font-semibold text-fg-muted mb-2 mt-10">{{ $strings.HeaderSleepTimerSettings }}</p>
       <div class="flex items-center py-3" @click="toggleDisableShakeToResetSleepTimer">
         <div class="w-10 flex justify-center">
           <ui-toggle-switch v-model="settings.disableShakeToResetSleepTimer" @input="saveSettings" />
@@ -123,6 +129,10 @@
       </div>
     </div>
 
+    <div v-show="loading" class="w-full h-full absolute top-0 left-0 flex items-center justify-center z-10">
+      <ui-loading-indicator />
+    </div>
+
     <modals-dialog v-model="showMoreMenuDialog" :items="moreMenuItems" @action="clickMenuAction" />
     <modals-sleep-timer-length-modal v-model="showSleepTimerLengthModal" @change="sleepTimerLengthModalSelection" />
     <modals-auto-sleep-timer-rewind-length-modal v-model="showAutoSleepTimerRewindLengthModal" @change="showAutoSleepTimerRewindLengthModalSelection" />
@@ -135,6 +145,7 @@ import { Dialog } from '@capacitor/dialog'
 export default {
   data() {
     return {
+      loading: false,
       deviceData: null,
       showMoreMenuDialog: false,
       showSleepTimerLengthModal: false,
@@ -160,6 +171,7 @@ export default {
         autoSleepTimerAutoRewindTime: 300000, // 5 minutes
         languageCode: 'en-us'
       },
+      theme: 'dark',
       lockCurrentOrientation: false,
       settingInfo: {
         disableShakeToResetSleepTimer: {
@@ -251,6 +263,18 @@ export default {
     languageOptionItems() {
       return this.$languageCodeOptions || []
     },
+    themeOptionItems() {
+      return [
+        {
+          text: this.$strings.LabelThemeDark,
+          value: 'dark'
+        },
+        {
+          text: this.$strings.LabelThemeLight,
+          value: 'light'
+        }
+      ]
+    },
     currentJumpForwardTimeIcon() {
       return this.jumpForwardItems[this.currentJumpForwardTimeIndex].icon
     },
@@ -274,7 +298,10 @@ export default {
       return item?.text || 'Error'
     },
     languageOption() {
-      return this.languageOptionItems.find((i) => i.value === this.settings.languageCode)?.text || 'English'
+      return this.languageOptionItems.find((i) => i.value === this.settings.languageCode)?.text || ''
+    },
+    themeOption() {
+      return this.themeOptionItems.find((i) => i.value === this.theme)?.text || ''
     },
     sleepTimerLengthOption() {
       if (!this.settings.sleepTimerLength) return this.$strings.LabelEndOfChapter
@@ -289,6 +316,7 @@ export default {
       if (this.moreMenuSetting === 'shakeSensitivity') return this.shakeSensitivityItems
       else if (this.moreMenuSetting === 'hapticFeedback') return this.hapticFeedbackItems
       else if (this.moreMenuSetting === 'language') return this.languageOptionItems
+      else if (this.moreMenuSetting === 'theme') return this.themeOptionItems
       return []
     }
   },
@@ -319,6 +347,10 @@ export default {
       this.moreMenuSetting = 'language'
       this.showMoreMenuDialog = true
     },
+    showThemeOptions() {
+      this.moreMenuSetting = 'theme'
+      this.showMoreMenuDialog = true
+    },
     clickMenuAction(action) {
       this.showMoreMenuDialog = false
       if (this.moreMenuSetting === 'shakeSensitivity') {
@@ -329,20 +361,22 @@ export default {
         this.hapticFeedbackUpdated(action)
       } else if (this.moreMenuSetting === 'language') {
         this.settings.languageCode = action
-        this.languageOptionUpdated(action)
+        this.saveSettings()
+      } else if (this.moreMenuSetting === 'theme') {
+        this.theme = action
+        this.saveTheme(action)
       }
     },
+    saveTheme(theme) {
+      document.documentElement.dataset.theme = theme
+      this.$localStore.setTheme(theme)
+    },
     autoSleepTimerTimeUpdated(val) {
-      console.log('[settings] Auto sleep timer time=', val)
       if (!val) return // invalid times return falsy
       this.saveSettings()
     },
     hapticFeedbackUpdated(val) {
       this.$store.commit('globals/setHapticFeedback', val)
-      this.saveSettings()
-    },
-    languageOptionUpdated(val) {
-      this.$setLanguageCode(val)
       this.saveSettings()
     },
     showInfo(setting) {
@@ -428,13 +462,12 @@ export default {
       const updatedDeviceData = await this.$db.updateDeviceSettings({ ...this.settings })
       if (updatedDeviceData) {
         this.$store.commit('setDeviceData', updatedDeviceData)
-        this.init()
+        this.deviceData = updatedDeviceData
+        this.$setLanguageCode(updatedDeviceData.deviceSettings?.languageCode || 'en-us')
+        this.setDeviceSettings()
       }
     },
-    async init() {
-      this.deviceData = await this.$db.getDeviceData()
-      this.$store.commit('setDeviceData', this.deviceData)
-
+    setDeviceSettings() {
       const deviceSettings = this.deviceData.deviceSettings || {}
       this.settings.disableAutoRewind = !!deviceSettings.disableAutoRewind
       this.settings.enableAltView = !!deviceSettings.enableAltView
@@ -459,6 +492,14 @@ export default {
       this.settings.autoSleepTimerAutoRewindTime = !isNaN(deviceSettings.autoSleepTimerAutoRewindTime) ? deviceSettings.autoSleepTimerAutoRewindTime : 300000 // 5 minutes
 
       this.settings.languageCode = deviceSettings.languageCode || 'en-us'
+    },
+    async init() {
+      this.loading = true
+      this.theme = (await this.$localStore.getTheme()) || 'dark'
+      this.deviceData = await this.$db.getDeviceData()
+      this.$store.commit('setDeviceData', this.deviceData)
+      this.setDeviceSettings()
+      this.loading = false
     }
   },
   mounted() {

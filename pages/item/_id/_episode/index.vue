@@ -6,30 +6,30 @@
       </div>
       <div class="flex-grow px-2">
         <div class="-mt-0.5 mb-0.5">
-          <nuxt-link :to="`/item/${libraryItemId}`" class="text-sm text-gray-200 underline">{{ podcast.metadata.title }}</nuxt-link>
+          <nuxt-link :to="`/item/${libraryItemId}`" class="text-sm text-fg underline">{{ podcast.metadata.title }}</nuxt-link>
         </div>
-        <p v-if="publishedAt" class="text-xs text-gray-300">{{ $dateDistanceFromNow(publishedAt) }}</p>
+        <p v-if="publishedAt" class="text-xs text-fg-muted">{{ $dateDistanceFromNow(publishedAt) }}</p>
       </div>
     </div>
 
     <p class="text-lg font-semibold">{{ title }}</p>
 
     <div v-if="episodeNumber || season || episodeType" class="flex py-2 items-center -mx-0.5">
-      <div v-if="episodeNumber" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-60 rounded-full text-xs font-light text-gray-200">{{ $strings.LabelEpisode }} #{{ episodeNumber }}</div>
-      <div v-if="season" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-60 rounded-full text-xs font-light text-gray-200">{{ $strings.LabelSeason }} #{{ season }}</div>
-      <div v-if="episodeType" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-60 rounded-full text-xs font-light text-gray-200 capitalize">{{ episodeType }}</div>
+      <div v-if="episodeNumber" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-60 rounded-full text-xs font-light text-fg">{{ $strings.LabelEpisode }} #{{ episodeNumber }}</div>
+      <div v-if="season" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-60 rounded-full text-xs font-light text-fg">{{ $strings.LabelSeason }} #{{ season }}</div>
+      <div v-if="episodeType" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-60 rounded-full text-xs font-light text-fg capitalize">{{ episodeType }}</div>
     </div>
 
     <!-- user progress card -->
-    <div v-if="progressPercent > 0" class="px-4 py-2 bg-primary text-sm font-semibold rounded-md text-gray-200 mt-4 relative" :class="resettingProgress ? 'opacity-25' : ''">
+    <div v-if="progressPercent > 0" class="px-4 py-2 bg-primary text-sm font-semibold rounded-md text-fg mt-4 relative" :class="resettingProgress ? 'opacity-25' : ''">
       <p class="leading-6">{{ $strings.LabelYourProgress }}: {{ Math.round(progressPercent * 100) }}%</p>
-      <p v-if="progressPercent < 1" class="text-gray-400 text-xs">{{ $getString('LabelTimeRemaining', [$elapsedPretty(userTimeRemaining)]) }}</p>
-      <p v-else class="text-gray-400 text-xs">{{ $strings.LabelFinished }} {{ $formatDate(userProgressFinishedAt) }}</p>
+      <p v-if="progressPercent < 1" class="text-fg-muted text-xs">{{ $getString('LabelTimeRemaining', [$elapsedPretty(userTimeRemaining)]) }}</p>
+      <p v-else class="text-fg-muted text-xs">{{ $strings.LabelFinished }} {{ $formatDate(userProgressFinishedAt) }}</p>
     </div>
 
     <!-- action buttons -->
     <div class="flex mt-4 -mx-1">
-      <ui-btn color="success" class="flex items-center justify-center flex-grow mx-1" :padding-x="4" @click="playClick">
+      <ui-btn color="success" class="flex items-center justify-center flex-grow mx-1" :loading="playerIsStartingForThisMedia" :padding-x="4" @click="playClick">
         <span class="material-icons">{{ playerIsPlaying ? 'pause' : 'play_arrow' }}</span>
         <span class="px-1 text-sm">{{ playerIsPlaying ? $strings.ButtonPause : localEpisodeId ? $strings.ButtonPlay : $strings.ButtonStream }}</span>
       </ui-btn>
@@ -41,7 +41,7 @@
       </ui-btn>
     </div>
 
-    <p class="text-sm text-gray-200 mt-1.5 mb-0.5 default-style" v-html="description" />
+    <p class="text-sm text-fg mt-1.5 mb-0.5 default-style" v-html="description" />
 
     <!-- loading overlay -->
     <div v-if="processing" class="absolute top-0 left-0 w-full h-full bg-black bg-opacity-30 flex items-center justify-center">
@@ -210,6 +210,15 @@ export default {
     playerIsPlaying() {
       return this.$store.state.playerIsPlaying && this.isPlaying
     },
+    playerIsStartingPlayback() {
+      // Play has been pressed and waiting for native play response
+      return this.$store.state.playerIsStartingPlayback
+    },
+    playerIsStartingForThisMedia() {
+      if (!this.serverEpisodeId) return false
+      const mediaId = this.$store.state.playerStartingPlaybackMediaId
+      return mediaId === this.serverEpisodeId
+    },
     userItemProgress() {
       if (this.isLocal) return this.localItemProgress
       return this.serverItemProgress
@@ -316,7 +325,6 @@ export default {
       if (value) {
         const res = await AbsFileSystem.deleteTrackFromItem({ id: this.localLibraryItemId, trackLocalFileId: localFile.id, trackContentUrl: localEpisodeAudioTrack.contentUrl })
         if (res?.id) {
-          this.$toast.success('Deleted episode successfully')
           if (this.isLocal) {
             // If this is local episode then redirect to server episode when available
             if (this.serverEpisodeId) {
@@ -333,10 +341,14 @@ export default {
       }
     },
     async playClick() {
+      if (this.playerIsStartingPlayback) return
+
       await this.$hapticsImpact()
       if (this.playerIsPlaying) {
         this.$eventBus.$emit('pause-item')
       } else {
+        this.$store.commit('setPlayerIsStartingPlayback', this.serverEpisodeId)
+
         if (this.localEpisodeId && this.localLibraryItemId && !this.isLocal) {
           console.log('Play local episode', this.localEpisodeId, this.localLibraryItemId)
 
@@ -398,14 +410,7 @@ export default {
 
       console.log('Local folder', JSON.stringify(localFolder))
 
-      const startDownloadMessage = `Start download for "${this.title}" to folder ${localFolder.name}?`
-      const { value } = await Dialog.confirm({
-        title: 'Confirm',
-        message: startDownloadMessage
-      })
-      if (value) {
-        this.startDownload(localFolder)
-      }
+      this.startDownload(localFolder)
     },
     async selectFolder() {
       const folderObj = await AbsFileSystem.selectFolder({ mediaType: this.mediaType })
@@ -518,7 +523,6 @@ export default {
         this.$nativeHttp
           .delete(`/api/podcasts/${this.serverLibraryItemId}/episode/${this.serverEpisodeId}?hard=1`)
           .then(() => {
-            this.$toast.success('Episode deleted from server')
             this.$router.replace(`/item/${this.serverLibraryItemId}`)
           })
           .catch((error) => {

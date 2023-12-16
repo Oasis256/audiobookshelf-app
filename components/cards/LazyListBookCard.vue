@@ -18,10 +18,10 @@
         <p class="whitespace-normal" :style="{ fontSize: 0.8 * sizeMultiplier + 'rem' }">
           <span v-if="seriesSequence">#{{ seriesSequence }}&nbsp;</span>{{ displayTitle }}
         </p>
-        <p class="truncate text-gray-400" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">{{ displayAuthor }}</p>
-        <p v-if="displaySortLine" class="truncate text-gray-400" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">{{ displaySortLine }}</p>
-        <p v-if="duration" class="truncate text-gray-400" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">{{ $elapsedPretty(duration) }}</p>
-        <p v-if="episodes" class="truncate text-gray-400" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">{{ episodes }}</p>
+        <p class="truncate text-fg-muted" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">{{ displayAuthor }}</p>
+        <p v-if="displaySortLine" class="truncate text-fg-muted" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">{{ displaySortLine }}</p>
+        <p v-if="duration" class="truncate text-fg-muted" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">{{ $elapsedPretty(duration) }}</p>
+        <p v-if="episodes" class="truncate text-fg-muted" :style="{ fontSize: 0.7 * sizeMultiplier + 'rem' }">{{ episodes }}</p>
       </div>
 
       <div v-if="localLibraryItem || isLocal" class="absolute top-0 right-0 z-20" :style="{ top: 0.375 * sizeMultiplier + 'rem', right: 0.375 * sizeMultiplier + 'rem', padding: `${0.1 * sizeMultiplier}rem ${0.25 * sizeMultiplier}rem` }">
@@ -176,7 +176,7 @@ export default {
       return this.mediaMetadata.series
     },
     seriesSequence() {
-      return this.series ? this.series.sequence : null
+      return this.series?.sequence || null
     },
     collapsedSeries() {
       // Only added to item object when collapseSeries is enabled
@@ -209,10 +209,10 @@ export default {
       return this.store.getters['user/getUserMediaProgress'](this.libraryItemId)
     },
     userProgressPercent() {
-      return this.userProgress ? this.userProgress.progress || 0 : 0
+      return this.userProgress?.progress || 0
     },
     itemIsFinished() {
-      return this.userProgress ? !!this.userProgress.isFinished : false
+      return !!this.userProgress?.isFinished
     },
     showError() {
       return this.numMissingParts || this.isMissing || this.isInvalid

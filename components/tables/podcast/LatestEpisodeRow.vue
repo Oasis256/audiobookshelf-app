@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full py-4 overflow-hidden relative border-b border-white border-opacity-10" @click.stop="goToEpisodePage">
+  <div class="w-full py-4 overflow-hidden relative border-b border-border" @click.stop="goToEpisodePage">
     <div v-if="episode" class="w-full px-1">
       <div class="flex mb-2">
         <div class="w-10 min-w-10">
@@ -7,9 +7,9 @@
         </div>
         <div class="flex-grow px-2">
           <div class="-mt-0.5 mb-0.5" @click.stop>
-            <nuxt-link :to="`/item/${libraryItemId}`" class="text-sm text-gray-200 underline">{{ podcast.metadata.title }}</nuxt-link>
+            <nuxt-link :to="`/item/${libraryItemId}`" class="text-sm text-fg underline">{{ podcast.metadata.title }}</nuxt-link>
           </div>
-          <p v-if="publishedAt" class="text-xs text-gray-300">{{ $dateDistanceFromNow(publishedAt) }}</p>
+          <p v-if="publishedAt" class="text-xs text-fg-muted">{{ $dateDistanceFromNow(publishedAt) }}</p>
         </div>
       </div>
 
@@ -17,19 +17,22 @@
         {{ title }}
       </p>
 
-      <p class="text-sm text-gray-200 episode-subtitle mt-1.5 mb-0.5" v-html="subtitle" />
+      <p class="text-sm text-fg episode-subtitle mt-1.5 mb-0.5" v-html="subtitle" />
 
       <div v-if="episodeNumber || season || episodeType" class="flex pt-2 items-center -mx-0.5">
-        <div v-if="episodeNumber" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-50 rounded-full text-xs font-light text-gray-200">{{ $strings.LabelEpisode }} #{{ episodeNumber }}</div>
-        <div v-if="season" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-50 rounded-full text-xs font-light text-gray-200">{{ $strings.LabelSeason }} #{{ season }}</div>
-        <div v-if="episodeType" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-50 rounded-full text-xs font-light text-gray-200 capitalize">
+        <div v-if="episodeNumber" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-50 rounded-full text-xs font-light text-fg">{{ $strings.LabelEpisode }} #{{ episodeNumber }}</div>
+        <div v-if="season" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-50 rounded-full text-xs font-light text-fg">{{ $strings.LabelSeason }} #{{ season }}</div>
+        <div v-if="episodeType" class="px-2 pt-px pb-0.5 mx-0.5 bg-primary bg-opacity-50 rounded-full text-xs font-light text-fg capitalize">
           {{ episodeType }}
         </div>
       </div>
 
       <div class="flex items-center pt-2">
-        <div class="h-8 px-4 border border-white border-opacity-20 hover:bg-white hover:bg-opacity-10 rounded-full flex items-center justify-center cursor-pointer" :class="userIsFinished ? 'text-white text-opacity-40' : ''" @click.stop="playClick">
-          <span class="material-icons" :class="streamIsPlaying ? '' : 'text-success'">{{ streamIsPlaying ? 'pause' : 'play_arrow' }}</span>
+        <div class="h-8 px-4 border border-border hover:bg-white hover:bg-opacity-10 rounded-full flex items-center justify-center cursor-pointer" :class="userIsFinished ? 'text-fg text-opacity-40' : ''" @click.stop="playClick">
+          <span v-if="!playerIsStartingForThisMedia" class="material-icons" :class="streamIsPlaying ? '' : 'text-success'">{{ streamIsPlaying ? 'pause' : 'play_arrow' }}</span>
+          <svg v-else class="animate-spin" style="width: 24px; height: 24px" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
+          </svg>
           <p class="pl-2 pr-1 text-sm font-semibold">{{ timeRemaining }}</p>
         </div>
 
@@ -41,7 +44,7 @@
 
         <div v-if="userCanDownload">
           <span v-if="isLocal" class="material-icons-outlined px-2 text-success text-lg">audio_file</span>
-          <span v-else-if="!localEpisode" class="material-icons mx-1.5 mt-2 text-xl" :class="downloadItem ? 'animate-bounce text-warning text-opacity-75' : ''" @click.stop="downloadClick">{{ downloadItem ? 'downloading' : 'download' }}</span>
+          <span v-else-if="!localEpisode" class="material-icons mx-1.5 mt-2 text-xl" :class="downloadItem || pendingDownload ? 'animate-bounce text-warning text-opacity-75' : ''" @click.stop="downloadClick">{{ downloadItem || pendingDownload ? 'downloading' : 'download' }}</span>
           <span v-else class="material-icons px-2 text-success text-xl">download_done</span>
         </div>
 
@@ -58,7 +61,6 @@
 </template>
 
 <script>
-import { Dialog } from '@capacitor/dialog'
 import { AbsFileSystem, AbsDownloader } from '@/plugins/capacitor'
 
 export default {
@@ -78,6 +80,7 @@ export default {
   data() {
     return {
       isProcessingReadUpdate: false,
+      pendingDownload: false,
       processing: false
     }
   },
@@ -122,6 +125,15 @@ export default {
     streamIsPlaying() {
       return this.$store.state.playerIsPlaying && this.isStreaming
     },
+    playerIsStartingPlayback() {
+      // Play has been pressed and waiting for native play response
+      return this.$store.state.playerIsStartingPlayback
+    },
+    playerIsStartingForThisMedia() {
+      if (!this.episode?.id) return false
+      const mediaId = this.$store.state.playerStartingPlaybackMediaId
+      return mediaId === this.episode.id
+    },
     itemProgress() {
       if (this.isLocal) return this.$store.getters['globals/getLocalMediaProgressById'](this.libraryItemId, this.episode.id)
       return this.$store.getters['user/getUserMediaProgress'](this.libraryItemId, this.episode.id)
@@ -135,10 +147,10 @@ export default {
       }
     },
     itemProgressPercent() {
-      return this.itemProgress ? this.itemProgress.progress : 0
+      return this.itemProgress?.progress || 0
     },
     userIsFinished() {
-      return this.itemProgress ? !!this.itemProgress.isFinished : false
+      return !!this.itemProgress?.isFinished
     },
     timeRemaining() {
       if (this.streamIsPlaying) return 'Playing'
@@ -154,7 +166,7 @@ export default {
       return this.$store.getters['globals/getDownloadItem'](this.libraryItemId, this.episode.id)
     },
     localEpisodeId() {
-      return this.localEpisode ? this.localEpisode.id : null
+      return this.localEpisode?.id || null
     },
     podcast() {
       return this.episode.podcast || {}
@@ -175,14 +187,16 @@ export default {
       return folderObj
     },
     async downloadClick() {
-      if (this.downloadItem) return
+      if (this.downloadItem || this.pendingDownload) return
+      this.pendingDownload = true
       await this.$hapticsImpact()
       if (this.isIos) {
         // no local folders on iOS
-        this.startDownload()
+        await this.startDownload()
       } else {
-        this.download()
+        await this.download()
       }
+      this.pendingDownload = false
     },
     async download(selectedLocalFolder = null) {
       let localFolder = selectedLocalFolder
@@ -216,14 +230,7 @@ export default {
 
       console.log('Local folder', JSON.stringify(localFolder))
 
-      var startDownloadMessage = `Start download for "${this.title}" to folder ${localFolder.name}?`
-      const { value } = await Dialog.confirm({
-        title: 'Confirm',
-        message: startDownloadMessage
-      })
-      if (value) {
-        this.startDownload(localFolder)
-      }
+      return this.startDownload(localFolder)
     },
     async startDownload(localFolder) {
       var payload = {
@@ -238,13 +245,19 @@ export default {
         var errorMsg = downloadRes.error || 'Unknown error'
         console.error('Download error', errorMsg)
         this.$toast.error(errorMsg)
+      } else {
+        console.log('Download completed', JSON.stringify(downloadRes))
       }
     },
     async playClick() {
+      if (this.playerIsStartingPlayback) return
+
       await this.$hapticsImpact()
       if (this.streamIsPlaying) {
         this.$eventBus.$emit('pause-item')
       } else {
+        this.$store.commit('setPlayerIsStartingPlayback', this.episode.id)
+
         if (this.localEpisode && this.localLibraryItemId) {
           console.log('Play local episode', this.localEpisode.id, this.localLibraryItemId)
 

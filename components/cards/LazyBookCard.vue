@@ -10,20 +10,20 @@
       <p class="truncate" :style="{ fontSize: 0.9 * sizeMultiplier + 'rem' }">
         {{ displayTitle }}
       </p>
-      <p class="truncate text-gray-400" :style="{ fontSize: 0.8 * sizeMultiplier + 'rem' }">{{ displayLineTwo || '&nbsp;' }}</p>
-      <p v-if="displaySortLine" class="truncate text-gray-400" :style="{ fontSize: 0.8 * sizeMultiplier + 'rem' }">{{ displaySortLine }}</p>
+      <p class="truncate text-fg-muted" :style="{ fontSize: 0.8 * sizeMultiplier + 'rem' }">{{ displayLineTwo || '&nbsp;' }}</p>
+      <p v-if="displaySortLine" class="truncate text-fg-muted" :style="{ fontSize: 0.8 * sizeMultiplier + 'rem' }">{{ displaySortLine }}</p>
     </div>
 
     <div v-if="seriesSequenceList" class="absolute rounded-lg bg-black bg-opacity-90 box-shadow-md z-20 text-right" :style="{ top: 0.375 * sizeMultiplier + 'rem', right: 0.375 * sizeMultiplier + 'rem', padding: `${0.1 * sizeMultiplier}rem ${0.25 * sizeMultiplier}rem` }" style="background-color: #78350f">
-      <p :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }">#{{ seriesSequenceList }}</p>
+      <p class="text-white" :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }">#{{ seriesSequenceList }}</p>
     </div>
     <div v-else-if="booksInSeries" class="absolute rounded-lg bg-black bg-opacity-90 box-shadow-md z-20" :style="{ top: 0.375 * sizeMultiplier + 'rem', right: 0.375 * sizeMultiplier + 'rem', padding: `${0.1 * sizeMultiplier}rem ${0.25 * sizeMultiplier}rem` }" style="background-color: #cd9d49dd">
-      <p :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }">{{ booksInSeries }}</p>
+      <p class="text-white" :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }">{{ booksInSeries }}</p>
     </div>
 
     <div class="w-full h-full absolute top-0 left-0 rounded overflow-hidden z-10">
       <div v-show="libraryItem && !imageReady" class="absolute top-0 left-0 w-full h-full flex items-center justify-center" :style="{ padding: sizeMultiplier * 0.5 + 'rem' }">
-        <p :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }" class="text-gray-300 text-center">{{ title }}</p>
+        <p :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }" class="text-fg-muted text-center">{{ title }}</p>
       </div>
 
       <img v-show="libraryItem" ref="cover" :src="bookCoverSrc" class="w-full h-full transition-opacity duration-300" :class="showCoverBg ? 'object-contain' : 'object-fill'" @load="imageLoaded" :style="{ opacity: imageReady ? 1 : 0 }" />
@@ -46,8 +46,13 @@
     </div>
 
     <!-- Play/pause button for podcast episode -->
-    <div v-if="recentEpisode" class="absolute z-10 top-0 left-0 bottom-0 right-0 m-auto flex items-center justify-center w-12 h-12 rounded-full bg-white bg-opacity-70" @click.stop="playEpisode">
-      <span class="material-icons text-6xl text-black text-opacity-80">{{ streamIsPlaying ? 'pause_circle' : 'play_circle_filled' }}</span>
+    <div v-if="recentEpisode" class="absolute z-10 top-0 left-0 bottom-0 right-0 m-auto flex items-center justify-center w-12 h-12 rounded-full" :class="{ 'bg-white/70': !playerIsStartingForThisMedia }" @click.stop="playEpisode">
+      <span v-if="!playerIsStartingForThisMedia" class="material-icons text-6xl text-black/80">{{ streamIsPlaying ? 'pause_circle' : 'play_circle_filled' }}</span>
+      <div v-else class="text-fg absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/80 rounded-full overflow-hidden">
+        <svg class="animate-spin" style="width: 24px; height: 24px" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
+        </svg>
+      </div>
     </div>
 
     <!-- No progress shown for collapsed series in library -->
@@ -75,19 +80,19 @@
 
     <!-- Podcast Episode # -->
     <div v-if="recentEpisodeNumber !== null && !isSelectionMode" class="absolute rounded-lg bg-black bg-opacity-90 box-shadow-md z-10" :style="{ top: 0.375 * sizeMultiplier + 'rem', right: 0.375 * sizeMultiplier + 'rem', padding: `${0.1 * sizeMultiplier}rem ${0.25 * sizeMultiplier}rem` }">
-      <p :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }">
+      <p class="text-white" :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }">
         Episode<span v-if="recentEpisodeNumber"> #{{ recentEpisodeNumber }}</span>
       </p>
     </div>
 
     <!-- Podcast Num Episodes -->
     <div v-else-if="numEpisodes && !numEpisodesIncomplete && !isSelectionMode" class="absolute rounded-full bg-black bg-opacity-90 box-shadow-md z-10 flex items-center justify-center" :style="{ top: 0.375 * sizeMultiplier + 'rem', right: 0.375 * sizeMultiplier + 'rem', width: 1.25 * sizeMultiplier + 'rem', height: 1.25 * sizeMultiplier + 'rem' }">
-      <p :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }">{{ numEpisodes }}</p>
+      <p class="text-white" :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }">{{ numEpisodes }}</p>
     </div>
 
     <!-- Podcast Num Episodes Incomplete -->
     <div v-else-if="numEpisodesIncomplete && !isSelectionMode" class="absolute rounded-full bg-black bg-opacity-90 box-shadow-md z-10 flex items-center justify-center" :style="{ top: 0.375 * sizeMultiplier + 'rem', right: 0.375 * sizeMultiplier + 'rem', width: 1.25 * sizeMultiplier + 'rem', height: 1.25 * sizeMultiplier + 'rem' }">
-      <p :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }">{{ numEpisodesIncomplete }}</p>
+      <p class="text-white" :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }">{{ numEpisodesIncomplete }}</p>
     </div>
   </div>
 </template>
@@ -322,6 +327,14 @@ export default {
     streamIsPlaying() {
       return this.store.state.playerIsPlaying && this.isStreaming
     },
+    playerIsStartingPlayback() {
+      // Play has been pressed and waiting for native play response
+      return this.store.state.playerIsStartingPlayback
+    },
+    playerIsStartingForThisMedia() {
+      const mediaId = this.store.state.playerStartingPlaybackMediaId
+      return mediaId === this.recentEpisode?.id
+    },
     isMissing() {
       return this._libraryItem.isMissing
     },
@@ -447,6 +460,8 @@ export default {
     },
     async play() {},
     async playEpisode() {
+      if (this.playerIsStartingPlayback) return
+
       await this.$hapticsImpact()
       const eventBus = this.$eventBus || this.$nuxt.$eventBus
       if (this.streamIsPlaying) {
@@ -454,6 +469,7 @@ export default {
         return
       }
 
+      this.store.commit('setPlayerIsStartingPlayback', this.recentEpisode.id)
       if (this.localEpisode) {
         // Play episode locally
         eventBus.$emit('play-item', {
