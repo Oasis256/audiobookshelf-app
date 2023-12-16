@@ -29,17 +29,10 @@
 
       <div v-if="hasLocal" class="mx-1">
         <div v-if="isLocalOnly" class="w-full rounded-md bg-warning/10 border border-warning p-4">
-<<<<<<< HEAD
-          <p class="text-sm">Media is not linked to The BookShelf server. No progress will be synced.</p>
-        </div>
-        <div v-else-if="currentServerConnectionConfigId && !isLocalMatchingServerAddress" class="w-full rounded-md bg-warning/10 border border-warning p-4">
-          <p class="text-sm">Media is linked to The BookShelf server on a different address ({{ localLibraryItem.serverAddress }}). Progress will be synced when connected to this server address.</p>
-=======
           <p class="text-sm">{{ $strings.MessageMediaNotLinkedToServer }}</p>
         </div>
         <div v-else-if="currentServerConnectionConfigId && !isLocalMatchingServerAddress" class="w-full rounded-md bg-warning/10 border border-warning p-4">
           <p class="text-sm">{{ $getString('MessageMediaLinkedToADifferentServer', [localLibraryItem.serverAddress]) }}</p>
->>>>>>> ddb1796891d7d63690771a308f136e9ce34e24c9
         </div>
         <div v-else-if="currentServerConnectionConfigId && !isLocalMatchingUser" class="w-full rounded-md bg-warning/10 border border-warning p-4">
           <p class="text-sm">{{ $strings.MessageMediaLinkedToADifferentUser }}</p>
