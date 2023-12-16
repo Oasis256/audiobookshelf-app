@@ -9,7 +9,7 @@ export default {
   props: {
     icon: {
       type: String,
-      default: 'The BookShelf'
+      default: 'AudbleTales'
     },
     fontSize: {
       type: String,

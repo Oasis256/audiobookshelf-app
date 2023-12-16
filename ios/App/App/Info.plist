@@ -9,14 +9,14 @@
 			<string>com.book.shelf</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>The BookShelf</string>
+				<string>AudbleTales</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>The BookShelf</string>
+	<string>AudbleTales</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

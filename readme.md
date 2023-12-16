@@ -1,6 +1,6 @@
-# The BookShelf Mobile App
+# AudbleTales Mobile App
 
-The BookShelf is a self-hosted audiobook and podcast server.
+AudbleTales is a self-hosted audiobook and podcast server.
 
 ### Android (beta)
 Get the Android app on the [Google Play Store](https://play.google.com/store/apps/details?id=com.book.shelf)
@@ -13,13 +13,13 @@ Join the beta testers and install the iOS app: https://testflight.apple.com/join
 
 ---
 
-[Go to the main project repo github.com/advplyr/The BookShelf](https://github.com/advplyr/The BookShelf) or the project site [The BookShelf.org](https://The BookShelf.org)
+[Go to the main project repo github.com/advplyr/AudbleTales](https://github.com/advplyr/AudbleTales) or the project site [AudbleTales.org](https://AudbleTales.org)
 
-Join us on [discord](https://discord.gg/pJsjuNCKRq) or [Matrix](https://matrix.to/#/#The BookShelf:matrix.org)
+Join us on [discord](https://discord.gg/pJsjuNCKRq) or [Matrix](https://matrix.to/#/#AudbleTales:matrix.org)
 
-**Requires an The BookShelf server to connect with**
+**Requires an AudbleTales server to connect with**
 
-<img alt="Screenshot" src="https://github.com/advplyr/The BookShelf/raw/master/screenshots/DeviceDemoScreens.png" />
+<img alt="Screenshot" src="https://github.com/advplyr/AudbleTales/raw/master/screenshots/DeviceDemoScreens.png" />
 
 
 ## Contributing
