@@ -1,6 +1,6 @@
 <template>
   <div class="relative">
-    <input v-model="input" ref="input" autofocus :type="type" :disabled="disabled" :readonly="readonly" autocorrect="off" autocapitalize="none" autocomplete="off" :placeholder="placeholder" class="py-2 w-full outline-none bg-primary" :class="inputClass" @keyup="keyup" />
+    <input v-model="input" ref="input" autofocus :type="type" :disabled="disabled" :readonly="readonly" autocorrect="off" autocapitalize="none" autocomplete="off" :placeholder="placeholder" class="py-2 w-full outline-none bg-primary disabled:text-fg-muted" :class="inputClass" @keyup="keyup" />
     <div v-if="prependIcon" class="absolute top-0 left-0 h-full px-2 flex items-center justify-center">
       <span class="material-icons text-lg">{{ prependIcon }}</span>
     </div>
@@ -87,5 +87,8 @@ export default {
 <style scoped>
 input[type='time']::-webkit-calendar-picker-indicator {
   filter: invert(100%);
+}
+html[data-theme='light'] input[type='time']::-webkit-calendar-picker-indicator {
+  filter: unset;
 }
 </style>

@@ -34,7 +34,7 @@
         <span class="px-1 text-sm">{{ playerIsPlaying ? $strings.ButtonPause : localEpisodeId ? $strings.ButtonPlay : $strings.ButtonStream }}</span>
       </ui-btn>
       <ui-btn v-if="showDownload" :color="downloadItem ? 'warning' : 'primary'" class="flex items-center justify-center mx-1" :padding-x="2" @click="downloadClick">
-        <span class="material-icons" :class="downloadItem ? 'animate-pulse' : ''">{{ downloadItem ? 'downloading' : 'download' }}</span>
+        <span class="material-icons" :class="(downloadItem || startingDownload) ? 'animate-pulse' : ''">{{ (downloadItem || startingDownload) ? 'downloading' : 'download' }}</span>
       </ui-btn>
       <ui-btn color="primary" class="flex items-center justify-center mx-1" :padding-x="2" @click="showMoreMenu = true">
         <span class="material-icons">more_vert</span>
@@ -111,7 +111,8 @@ export default {
     return {
       showMoreMenu: false,
       processing: false,
-      resettingProgress: false
+      resettingProgress: false,
+      startingDownload: false
     }
   },
   computed: {
@@ -215,9 +216,10 @@ export default {
       return this.$store.state.playerIsStartingPlayback
     },
     playerIsStartingForThisMedia() {
-      if (!this.serverEpisodeId) return false
       const mediaId = this.$store.state.playerStartingPlaybackMediaId
-      return mediaId === this.serverEpisodeId
+      if (!mediaId) return false
+
+      return mediaId === this.localEpisodeId || mediaId === this.serverEpisodeId
     },
     userItemProgress() {
       if (this.isLocal) return this.localItemProgress
@@ -347,7 +349,7 @@ export default {
       if (this.playerIsPlaying) {
         this.$eventBus.$emit('pause-item')
       } else {
-        this.$store.commit('setPlayerIsStartingPlayback', this.serverEpisodeId)
+        this.$store.commit('setPlayerIsStartingPlayback', this.episode.id)
 
         if (this.localEpisodeId && this.localLibraryItemId && !this.isLocal) {
           console.log('Play local episode', this.localEpisodeId, this.localLibraryItemId)
@@ -369,7 +371,13 @@ export default {
       }
     },
     async downloadClick() {
-      if (this.downloadItem) return
+      if (this.downloadItem || this.startingDownload) return
+
+      this.startingDownload = true
+      setTimeout(() => {
+        this.startingDownload = false
+      }, 1000)
+
       await this.$hapticsImpact()
       if (this.isIos) {
         // no local folders on iOS
