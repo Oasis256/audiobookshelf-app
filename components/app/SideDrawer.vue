@@ -79,7 +79,10 @@ export default {
       return this.$store.state.serverSettings || {}
     },
     username() {
-      return this.user ? this.user.username : ''
+      return this.user?.username || ''
+    },
+    userIsAdminOrUp() {
+      return this.$store.getters['user/getIsAdminOrUp']
     },
     navItems() {
       var items = [
@@ -133,6 +136,12 @@ export default {
 
       if (this.serverConnectionConfig) {
         items.push({
+          icon: 'language',
+          text: this.$strings.ButtonGoToWebClient,
+          action: 'openWebClient'
+        })
+
+        items.push({
           icon: 'login',
           text: this.$strings.ButtonSwitchServerUser,
           action: 'logout'
@@ -151,6 +160,10 @@ export default {
       if (action === 'logout') {
         await this.logout()
         this.$router.push('/connect')
+      } else if (action === 'openWebClient') {
+        this.show = false
+        let path = `/library/${this.$store.state.libraries.currentLibraryId}`
+        await this.$store.dispatch('user/openWebClient', path)
       }
     },
     clickBackground() {
