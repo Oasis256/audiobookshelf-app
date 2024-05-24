@@ -25,7 +25,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.utils.MediaConstants
-import com.book.shelf.BuildConfig
 import com.book.shelf.R
 import com.book.shelf.data.*
 import com.book.shelf.data.DeviceInfo
@@ -35,6 +34,7 @@ import com.book.shelf.managers.SleepTimerManager
 import com.book.shelf.media.MediaManager
 import com.book.shelf.media.MediaProgressSyncer
 import com.book.shelf.server.ApiHandler
+import com.book.shelf.BuildConfig
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
